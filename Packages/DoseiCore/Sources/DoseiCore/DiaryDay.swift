@@ -14,21 +14,21 @@ public struct DiaryDay: Hashable, Sendable {
     }
 
     /// date がどの日記の日に属するか。
-    public init(containing date: Date, boundaryHour: Int = 4, calendar: Calendar = DosekiFormatter.japaneseCalendar) {
+    public init(containing date: Date, boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.japaneseCalendar) {
         let shifted = date.addingTimeInterval(-Double(boundaryHour) * 3600)
         let c = calendar.dateComponents([.year, .month, .day], from: shifted)
         self.init(year: c.year!, month: c.month!, day: c.day!)
     }
 
-    public func start(boundaryHour: Int = 4, calendar: Calendar = DosekiFormatter.japaneseCalendar) -> Date {
+    public func start(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.japaneseCalendar) -> Date {
         calendar.date(from: DateComponents(year: year, month: month, day: day, hour: boundaryHour))!
     }
 
-    public func end(boundaryHour: Int = 4, calendar: Calendar = DosekiFormatter.japaneseCalendar) -> Date {
+    public func end(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.japaneseCalendar) -> Date {
         calendar.date(byAdding: .day, value: 1, to: start(boundaryHour: boundaryHour, calendar: calendar))!
     }
 
-    public func adding(days: Int, calendar: Calendar = DosekiFormatter.japaneseCalendar) -> DiaryDay {
+    public func adding(days: Int, calendar: Calendar = DoseiFormatter.japaneseCalendar) -> DiaryDay {
         let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
         let moved = calendar.date(byAdding: .day, value: days, to: noon)!
         let c = calendar.dateComponents([.year, .month, .day], from: moved)
@@ -36,7 +36,7 @@ public struct DiaryDay: Hashable, Sendable {
     }
 
     /// 「11月3日（火）」
-    public func title(calendar: Calendar = DosekiFormatter.japaneseCalendar) -> String {
+    public func title(calendar: Calendar = DoseiFormatter.japaneseCalendar) -> String {
         let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
         let weekday = calendar.component(.weekday, from: noon)
         let names = ["日", "月", "火", "水", "木", "金", "土"]
@@ -82,7 +82,7 @@ public enum SleepAnalyzer {
         sessions: [DateInterval2],
         day: DiaryDay,
         boundaryHour: Int = 4,
-        calendar: Calendar = DosekiFormatter.japaneseCalendar
+        calendar: Calendar = DoseiFormatter.japaneseCalendar
     ) -> (wake: Date?, bed: Date?) {
         let dayStart = day.start(boundaryHour: boundaryHour, calendar: calendar)
         let h: (Double) -> Date = { dayStart.addingTimeInterval($0 * 3600) }

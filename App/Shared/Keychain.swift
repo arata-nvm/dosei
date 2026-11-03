@@ -3,7 +3,7 @@ import Security
 
 /// Swarm のトークンを iCloud キーチェーンに保存する（iPhone と Mac で共有される）。
 enum Keychain {
-    private static let service = "doseki"
+    private static let service = "dosei"
 
     static func get(_ account: String) -> String? {
         let query: [String: Any] = [

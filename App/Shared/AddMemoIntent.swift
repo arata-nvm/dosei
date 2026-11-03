@@ -18,7 +18,7 @@ struct AddMemoIntent: AppIntent {
     }
 }
 
-struct DosekiShortcuts: AppShortcutsProvider {
+struct DoseiShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: AddMemoIntent(),

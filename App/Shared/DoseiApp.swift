@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
-struct DosekiApp: App {
+struct DoseiApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()

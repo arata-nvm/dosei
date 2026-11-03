@@ -3,8 +3,8 @@ import Foundation
 /// Swarm（Foursquare API v2）から自分のチェックインを取ってくる。
 struct SwarmClient {
     static let tokenAccount = "swarm-token"
-    static let callbackScheme = "doseki"
-    static let redirectURI = "doseki://swarm"
+    static let callbackScheme = "dosei"
+    static let redirectURI = "dosei://swarm"
 
     struct Checkin {
         var id: String

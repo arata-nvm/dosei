@@ -23,12 +23,12 @@ public struct TimelineItem: Equatable, Sendable {
 ///   時が同じでも省略しない（「同５３分、研究室着。同８時５９分から」「同４分まで、電車。同５分から」）
 /// - ちょうどの時刻は「同９時」のように分を書かない
 /// - 数字は全角
-public struct DosekiFormatter: Sendable {
+public struct DoseiFormatter: Sendable {
     public var calendar: Calendar
     /// 冒頭に置く名前（「高市首相」に当たる部分）。nil なら付けない。
     public var subject: String?
 
-    public init(calendar: Calendar = DosekiFormatter.japaneseCalendar, subject: String? = nil) {
+    public init(calendar: Calendar = DoseiFormatter.japaneseCalendar, subject: String? = nil) {
         self.calendar = calendar
         self.subject = subject
     }

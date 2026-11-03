@@ -1,6 +1,6 @@
 import SwiftUI
 import SwiftData
-import DosekiCore
+import DoseiCore
 #if os(iOS)
 import UIKit
 #else
@@ -66,7 +66,7 @@ struct SummaryView: View {
 
     private func rebuild() {
         let items = entries.map { TimelineItem(start: $0.start, end: $0.end, text: $0.text) }
-        let formatter = DosekiFormatter(subject: subject.isEmpty ? nil : subject)
+        let formatter = DoseiFormatter(subject: subject.isEmpty ? nil : subject)
         text = formatter.format(items)
         copied = false
     }

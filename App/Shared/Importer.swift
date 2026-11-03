@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
-import DosekiCore
+import DoseiCore
 
 /// Swarm とヘルスケアの記録を、その日の Entry として取り込む。
 @MainActor

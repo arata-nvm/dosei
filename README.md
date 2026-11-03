@@ -20,24 +20,24 @@ brew install xcodegen
 ```
 
 1. `project.yml` の `DEVELOPMENT_TEAM`（Team ID）と `BUNDLE_ID` を自分のものに変える
-2. `xcodegen` を実行して `Doseki.xcodeproj` を開く
+2. `xcodegen` を実行して `Dosei.xcodeproj` を開く
 3. iCloud コンテナ `iCloud.<BUNDLE_ID>` は初回ビルド時に Xcode が作る（Signing & Capabilities で確認）
-4. `Doseki-iOS` を実機で、`Doseki-macOS` を Mac で実行
+4. `Dosei-iOS` を実機で、`Dosei-macOS` を Mac で実行
 
 ### Swarm
 
 1. https://foursquare.com/developers/apps でアプリを作る
-2. Redirect URI に `doseki://swarm` を登録
+2. Redirect URI に `dosei://swarm` を登録
 3. アプリの設定に Client ID を入れて「Swarm でログイン」
    （うまくいかなければ、取得したアクセストークンを直接貼る）
 
 ## 構成
 
 ```
-Packages/DosekiCore   文体の組み立て・日付の区切り・睡眠の判定（プラットフォーム非依存、テストあり）
+Packages/DoseiCore   文体の組み立て・日付の区切り・睡眠の判定（プラットフォーム非依存、テストあり）
 App/Shared            SwiftUI（iPhone / Mac 共通）、SwiftData + CloudKit、Swarm
 App/iOS               HealthKit
 ```
 
-首相動静の規則は `DosekiFormatter.swift` に書いてある。
-`swift test`（`Packages/DosekiCore` で実行）で、その規則どおりに文章が組み立てられることを確かめている。
+首相動静の規則は `DoseiFormatter.swift` に書いてある。
+`swift test`（`Packages/DoseiCore` で実行）で、その規則どおりに文章が組み立てられることを確かめている。

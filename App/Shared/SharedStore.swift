@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
-import DosekiCore
+import DoseiCore
 
 enum SharedStore {
     /// アプリ本体とショートカット（App Intent）で同じ保存先を使う。

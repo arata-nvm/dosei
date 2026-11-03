@@ -1,8 +1,8 @@
 import XCTest
-@testable import DosekiCore
+@testable import DoseiCore
 
-final class DosekiFormatterTests: XCTestCase {
-    let cal = DosekiFormatter.japaneseCalendar
+final class DoseiFormatterTests: XCTestCase {
+    let cal = DoseiFormatter.japaneseCalendar
 
     func t(_ h: Int, _ m: Int, day: Int = 2) -> Date {
         cal.date(from: DateComponents(year: 2026, month: 11, day: day, hour: h, minute: m))!
@@ -42,7 +42,7 @@ final class DosekiFormatterTests: XCTestCase {
             + "同４時２５分、研究室発。同２７分、カフェ着。同４１分、同所発。同４２分、研究室着。"
             + "同４時５２分から同５時１２分まで、ゼミ。同５時１７分から同３１分まで、雑談。"
             + "同６時１分、研究室発。同２分、自宅着。"
-        XCTAssertEqual(DosekiFormatter().format(items), expected)
+        XCTAssertEqual(DoseiFormatter().format(items), expected)
     }
 
     func testSubjectHeaderAndExactHours() {
@@ -52,7 +52,7 @@ final class DosekiFormatterTests: XCTestCase {
             .init(start: t(12, 30), text: "昼食。"),
         ]
         XCTAssertEqual(
-            DosekiFormatter(subject: "わたし").format(items),
+            DoseiFormatter(subject: "わたし").format(items),
             "\u{3000}わたし\n\u{3000}午前９時、大学着。同１０時から午後０時まで、講義。同３０分、昼食。"
         )
     }
@@ -62,12 +62,12 @@ final class DosekiFormatterTests: XCTestCase {
             .init(start: t(23, 10), text: "帰宅"),
             .init(start: t(1, 30, day: 3), text: "就寝"),
         ]
-        XCTAssertEqual(DosekiFormatter().format(items), "\u{3000}午後１１時１０分、帰宅。午前１時３０分、就寝。")
+        XCTAssertEqual(DoseiFormatter().format(items), "\u{3000}午後１１時１０分、帰宅。午前１時３０分、就寝。")
     }
 
     func testEmptyAndBlankItems() {
-        XCTAssertEqual(DosekiFormatter().format([]), "")
-        XCTAssertEqual(DosekiFormatter().format([.init(start: t(9, 0), text: "  ")]), "")
+        XCTAssertEqual(DoseiFormatter().format([]), "")
+        XCTAssertEqual(DoseiFormatter().format([.init(start: t(9, 0), text: "  ")]), "")
     }
 
     func testDiaryDayBoundary() {

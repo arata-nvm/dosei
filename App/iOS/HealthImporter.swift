@@ -1,6 +1,6 @@
 import Foundation
 import HealthKit
-import DosekiCore
+import DoseiCore
 
 /// Apple Watch の睡眠とワークアウトをヘルスケアから読む（iPhone のみ）。
 struct HealthImporter {

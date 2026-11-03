@@ -1,6 +1,6 @@
 import SwiftUI
 import SwiftData
-import DosekiCore
+import DoseiCore
 
 struct TodayView: View {
     @Environment(\.modelContext) private var context
