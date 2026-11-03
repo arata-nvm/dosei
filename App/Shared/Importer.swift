@@ -36,9 +36,7 @@ enum Importer {
         if let swarm = SwarmClient.saved {
             do {
                 for c in try await swarm.checkins(from: day.startDate, to: day.endDate) {
-                    var text = "\(c.venue)着"
-                    if let shout = c.shout, !shout.isEmpty { text += "。\(shout)" }
-                    upsert(context, sourceID: "swarm-\(c.id)", kind: .checkin, start: c.date, text: text)
+                    upsert(context, sourceID: "swarm-\(c.id)", kind: .checkin, start: c.date, text: "\(c.venue)着")
                 }
             } catch {
                 report.messages.append("Swarm: \(error.localizedDescription)")

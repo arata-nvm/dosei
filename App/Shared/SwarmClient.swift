@@ -10,7 +10,6 @@ struct SwarmClient {
         var id: String
         var date: Date
         var venue: String
-        var shout: String?
     }
 
     var token: String
@@ -58,8 +57,7 @@ struct SwarmClient {
             Checkin(
                 id: $0.id,
                 date: Date(timeIntervalSince1970: TimeInterval($0.createdAt)),
-                venue: $0.venue?.name ?? "（場所不明）",
-                shout: $0.shout
+                venue: $0.venue?.name ?? "（場所不明）"
             )
         }
     }
@@ -79,7 +77,6 @@ struct SwarmClient {
         struct Item: Decodable {
             var id: String
             var createdAt: Int
-            var shout: String?
             var venue: Venue?
         }
         struct Venue: Decodable { var name: String }
