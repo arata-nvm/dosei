@@ -7,7 +7,7 @@ struct SummaryView: View {
     let day: DiaryDay
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-    @AppStorage(AppSettings.Key.subject) private var subject = ""
+    @AppStorage(AppSettings.Key.nikkyID) private var nikkyID = ""
     @Query private var entries: [Entry]
     @State private var text = ""
 
@@ -33,7 +33,7 @@ struct SummaryView: View {
                         // 文字だと長く、狭い画面では「…」に入ってしまうのでアイコンにする
                         Button("コピーしてNikkyを開く", systemImage: "arrow.up.forward.app") {
                             Pasteboard.copy(text)
-                            openURL(AppSettings.nikkyURL)
+                            openURL(AppSettings.nikkyNewPostURL(id: nikkyID))
                         }
                         .labelStyle(.iconOnly)
                     }
@@ -47,7 +47,6 @@ struct SummaryView: View {
     }
 
     private func rebuild() {
-        let formatter = DoseiFormatter(subject: subject.isEmpty ? nil : subject)
-        text = formatter.format(entries.map(\.timelineItem))
+        text = DoseiFormatter().format(entries.map(\.timelineItem))
     }
 }

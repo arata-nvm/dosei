@@ -3,7 +3,7 @@ import DoseiCore
 import AuthenticationServices
 
 struct SettingsView: View {
-    @AppStorage(AppSettings.Key.subject) private var subject = ""
+    @AppStorage(AppSettings.Key.nikkyID) private var nikkyID = ""
     @AppStorage(AppSettings.Key.boundaryHour) private var boundaryHour = AppSettings.defaultBoundaryHour
     @AppStorage(AppSettings.Key.swarmClientID) private var clientID = ""
     @Environment(\.webAuthenticationSession) private var webAuth
@@ -17,7 +17,11 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                TextField("名前", text: $subject)
+                TextField("Nikky の ID", text: $nikkyID)
+                    .autocorrectionDisabled()
+                    #if os(iOS)
+                    .textInputAutocapitalization(.never)
+                    #endif
                 Picker("日付の区切り", selection: $boundaryHour) {
                     ForEach(0...8, id: \.self) { Text("午前\($0)時").tag($0) }
                 }
