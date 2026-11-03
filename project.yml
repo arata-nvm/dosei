@@ -1,0 +1,74 @@
+# XcodeGen の設定。`xcodegen` で Doseki.xcodeproj を作る。
+# 使う前に下の DEVELOPMENT_TEAM と BUNDLE_ID を自分のものに変える。
+name: Doseki
+
+options:
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  developmentLanguage: ja
+
+settings:
+  base:
+    DEVELOPMENT_TEAM: "XXXXXXXXXX"            # ← Apple Developer の Team ID
+    BUNDLE_ID: "dev.example.doseki"           # ← 自分の逆ドメインに
+    PRODUCT_BUNDLE_IDENTIFIER: "$(BUNDLE_ID)" # iPhone と Mac で同じ ID（キーチェーンと iCloud を共有するため）
+    PRODUCT_NAME: "動静"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: "動静"
+
+packages:
+  DosekiCore:
+    path: Packages/DosekiCore
+
+targets:
+  Doseki-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - App/Shared
+      - App/iOS
+    dependencies:
+      - package: DosekiCore
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_NSHealthShareUsageDescription: "Apple Watch の睡眠とワークアウトから、起床・就寝・移動の時刻を日記に入れるために使います。"
+    info:
+      path: App/iOS/Info.plist
+      properties:
+        UIBackgroundModes: [remote-notification]
+    entitlements:
+      path: App/iOS/Doseki.entitlements
+      properties:
+        com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.access: []
+        com.apple.developer.icloud-services: [CloudKit]
+        com.apple.developer.icloud-container-identifiers: ["iCloud.$(BUNDLE_ID)"]
+        aps-environment: development
+
+  Doseki-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - App/Shared
+    dependencies:
+      - package: DosekiCore
+    settings:
+      base:
+        INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.lifestyle"
+        ENABLE_HARDENED_RUNTIME: YES
+    entitlements:
+      path: App/macOS/Doseki.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.developer.icloud-services: [CloudKit]
+        com.apple.developer.icloud-container-identifiers: ["iCloud.$(BUNDLE_ID)"]
+        com.apple.developer.aps-environment: development

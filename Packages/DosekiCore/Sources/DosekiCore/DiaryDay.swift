@@ -1,0 +1,102 @@
+import Foundation
+
+/// 「その日の日記」が扱う時間帯。深夜の就寝を前日扱いにするため、
+/// 区切りを午前0時ではなく boundaryHour（既定は午前4時）に置く。
+public struct DiaryDay: Hashable, Sendable {
+    public var year: Int
+    public var month: Int
+    public var day: Int
+
+    public init(year: Int, month: Int, day: Int) {
+        self.year = year
+        self.month = month
+        self.day = day
+    }
+
+    /// date がどの日記の日に属するか。
+    public init(containing date: Date, boundaryHour: Int = 4, calendar: Calendar = DosekiFormatter.japaneseCalendar) {
+        let shifted = date.addingTimeInterval(-Double(boundaryHour) * 3600)
+        let c = calendar.dateComponents([.year, .month, .day], from: shifted)
+        self.init(year: c.year!, month: c.month!, day: c.day!)
+    }
+
+    public func start(boundaryHour: Int = 4, calendar: Calendar = DosekiFormatter.japaneseCalendar) -> Date {
+        calendar.date(from: DateComponents(year: year, month: month, day: day, hour: boundaryHour))!
+    }
+
+    public func end(boundaryHour: Int = 4, calendar: Calendar = DosekiFormatter.japaneseCalendar) -> Date {
+        calendar.date(byAdding: .day, value: 1, to: start(boundaryHour: boundaryHour, calendar: calendar))!
+    }
+
+    public func adding(days: Int, calendar: Calendar = DosekiFormatter.japaneseCalendar) -> DiaryDay {
+        let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+        let moved = calendar.date(byAdding: .day, value: days, to: noon)!
+        let c = calendar.dateComponents([.year, .month, .day], from: moved)
+        return DiaryDay(year: c.year!, month: c.month!, day: c.day!)
+    }
+
+    /// 「11月3日（火）」
+    public func title(calendar: Calendar = DosekiFormatter.japaneseCalendar) -> String {
+        let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+        let weekday = calendar.component(.weekday, from: noon)
+        let names = ["日", "月", "火", "水", "木", "金", "土"]
+        return "\(month)月\(day)日（\(names[weekday - 1])）"
+    }
+
+    /// Swarm や HealthKit の取り込みで使う識別子用（"2026-11-03"）
+    public var key: String {
+        String(format: "%04d-%02d-%02d", year, month, day)
+    }
+}
+
+public struct DateInterval2: Equatable, Sendable {
+    public var start: Date
+    public var end: Date
+    public init(start: Date, end: Date) {
+        self.start = start
+        self.end = end
+    }
+    public var duration: TimeInterval { end.timeIntervalSince(start) }
+}
+
+/// Apple Watch の睡眠記録（細切れの「睡眠中」区間）から起床・就寝時刻を求める。
+public enum SleepAnalyzer {
+    /// 間隔が maxGap 以下の区間をつないで、ひと続きの睡眠にまとめる。
+    public static func sessions(_ intervals: [DateInterval2], maxGap: TimeInterval = 60 * 60) -> [DateInterval2] {
+        let sorted = intervals.sorted { $0.start < $1.start }
+        var result: [DateInterval2] = []
+        for iv in sorted {
+            if var last = result.last, iv.start.timeIntervalSince(last.end) <= maxGap {
+                last.end = max(last.end, iv.end)
+                result[result.count - 1] = last
+            } else {
+                result.append(iv)
+            }
+        }
+        return result
+    }
+
+    /// その日の起床（朝の睡眠の終わり）と就寝（夜の睡眠の始まり）。
+    /// 昼寝に引っ張られないよう、候補の中で一番長い睡眠を選ぶ。
+    public static func wakeAndBed(
+        sessions: [DateInterval2],
+        day: DiaryDay,
+        boundaryHour: Int = 4,
+        calendar: Calendar = DosekiFormatter.japaneseCalendar
+    ) -> (wake: Date?, bed: Date?) {
+        let dayStart = day.start(boundaryHour: boundaryHour, calendar: calendar)
+        let h: (Double) -> Date = { dayStart.addingTimeInterval($0 * 3600) }
+
+        // 起床: 区切り〜その12時間後（既定で午前4時〜午後4時）に終わった睡眠
+        let wakeSession = sessions
+            .filter { $0.end >= dayStart && $0.end < h(12) }
+            .max { $0.duration < $1.duration }
+
+        // 就寝: 区切りの14時間後〜26時間後（既定で午後6時〜翌午前6時）に始まった睡眠
+        let bedSession = sessions
+            .filter { $0.start >= h(14) && $0.start < h(26) }
+            .max { $0.duration < $1.duration }
+
+        return (wakeSession?.end, bedSession?.start)
+    }
+}
