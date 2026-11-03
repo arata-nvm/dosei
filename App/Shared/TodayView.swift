@@ -34,6 +34,13 @@ struct TodayView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             #else
             DayEntriesList(day: day, editing: $editing)
+                // トラックパッドの2本指スワイプで日付を変える（シートを開いている間は無効）
+                .onTrackpadSwipe(isEnabled: editing == nil && !showSummary) { direction in
+                    switch direction {
+                    case .right: if offset > -Self.maxDaysBack { offset -= 1 }
+                    case .left: if offset < 0 { offset += 1 }
+                    }
+                }
             #endif
             inputBar
         }
@@ -152,24 +159,6 @@ struct DayEntriesList: View {
                 EntryRow(entry: entry)
                     .contentShape(Rectangle())
                     .onTapGesture { editing = entry }
-                    #if os(macOS)
-                    // iPhone では横スワイプを日付の切り替えに使うので、行のスワイプは Mac だけ
-                    .swipeActions(edge: .leading) {
-                        if canEnd(entry) {
-                            Button("ここまで", systemImage: "stop.circle") { end(entry) }
-                                .tint(.blue)
-                        }
-                    }
-                    .swipeActions(edge: .trailing) {
-                        if entry.sourceID == nil {
-                            Button("削除", systemImage: "trash", role: .destructive) { context.delete(entry) }
-                        } else {
-                            // 取り込んだものは消すと次の取り込みで復活するので、隠す
-                            hideButton(entry)
-                                .tint(.gray)
-                        }
-                    }
-                    #endif
                     .contextMenu {
                         Button("編集", systemImage: "pencil") { editing = entry }
                         if canEnd(entry) {
