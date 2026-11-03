@@ -35,6 +35,17 @@ public struct DiaryDay: Hashable, Sendable {
         return DiaryDay(year: c.year!, month: c.month!, day: c.day!)
     }
 
+    /// その日の日記の中での「時:分」の日時。区切りより前の時刻（深夜）は、暦の上では翌日になる。
+    public func date(
+        hour: Int, minute: Int, boundaryHour: Int = 4,
+        calendar: Calendar = DoseiFormatter.japaneseCalendar
+    ) -> Date {
+        let calendarDay = hour < boundaryHour ? adding(days: 1, calendar: calendar) : self
+        return calendar.date(
+            from: DateComponents(
+                year: calendarDay.year, month: calendarDay.month, day: calendarDay.day, hour: hour, minute: minute))!
+    }
+
     /// 「11月3日（火）」
     public func title(calendar: Calendar = DoseiFormatter.japaneseCalendar) -> String {
         let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!

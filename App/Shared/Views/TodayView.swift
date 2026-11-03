@@ -18,6 +18,8 @@ struct TodayView: View {
 
     /// さかのぼれる日数
     private static let maxDaysBack = 3650
+    /// 先に進める日数（間違えて先の日に入れてしまった記録を見られるように）
+    private static let maxDaysAhead = 7
 
     private var day: DiaryDay { baseDay.adding(days: offset) }
     private var isToday: Bool { day == AppSettings.today }
@@ -55,7 +57,7 @@ struct TodayView: View {
     @ViewBuilder
     private var pages: some View {
         #if os(iOS)
-        DayPager(offset: $offset, range: -Self.maxDaysBack...0) { i in
+        DayPager(offset: $offset, range: -Self.maxDaysBack...Self.maxDaysAhead) { i in
             // ページは UIKit 側で作られ、SwiftUI の環境を引き継がないので、保存先と引っぱって更新を渡す
             DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
                 .modelContext(context)
@@ -77,7 +79,7 @@ struct TodayView: View {
     }
 
     private func goForward() {
-        if offset < 0 { offset += 1 }
+        if offset < Self.maxDaysAhead { offset += 1 }
     }
 
     // MARK: - 入力欄
@@ -151,7 +153,7 @@ struct TodayView: View {
                 .disabled(offset <= -Self.maxDaysBack)
             Button("次の日", systemImage: "chevron.right") { withAnimation { goForward() } }
                 .keyboardShortcut("]", modifiers: .command)
-                .disabled(offset >= 0)
+                .disabled(offset >= Self.maxDaysAhead)
         }
         #endif
         ToolbarItemGroup(placement: .primaryAction) {

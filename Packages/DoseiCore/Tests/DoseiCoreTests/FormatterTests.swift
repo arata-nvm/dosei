@@ -81,6 +81,18 @@ final class DoseiFormatterTests: XCTestCase {
             DiaryDay(year: 2026, month: 11, day: 30).adding(days: 1), DiaryDay(year: 2026, month: 12, day: 1))
     }
 
+    func testDateWithinDiaryDay() {
+        let day = DiaryDay(year: 2026, month: 11, day: 30)
+        XCTAssertEqual(day.date(hour: 9, minute: 15), t(9, 15, day: 30))
+        XCTAssertEqual(day.date(hour: 4, minute: 0), t(4, 0, day: 30))
+        // 区切り（午前4時）より前は、その日の深夜 = 暦の上では翌日（月をまたいでも）
+        let cal = DoseiFormatter.japaneseCalendar
+        XCTAssertEqual(
+            day.date(hour: 1, minute: 30),
+            cal.date(from: DateComponents(year: 2026, month: 12, day: 1, hour: 1, minute: 30)))
+        XCTAssertEqual(DiaryDay(containing: day.date(hour: 3, minute: 59)), day)
+    }
+
     func testSleep() {
         let raw: [TimeSpan] = [
             .init(start: t(0, 40), end: t(3, 0)),

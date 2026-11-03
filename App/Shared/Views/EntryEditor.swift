@@ -1,3 +1,4 @@
+import DoseiCore
 import SwiftData
 import SwiftUI
 
@@ -12,6 +13,8 @@ struct EntryEditor: View {
     @State private var hasEnd = false
     @State private var end = Date()
     @State private var isHidden = false
+    /// この記録が入っている日記の日。編集では時刻だけを選び、日は動かさない。
+    @State private var day = AppSettings.today
 
     var body: some View {
         NavigationStack {
@@ -27,10 +30,11 @@ struct EntryEditor: View {
                             text = new.filter { !$0.isNewline }
                         }
                     }
-                DatePicker("時刻", selection: $start)
+                // 日付まで選べると、間違えて別の日（見えない明日など）に移ってしまうので時刻だけにする
+                DatePicker("時刻", selection: timeInDay($start), displayedComponents: .hourAndMinute)
                 Toggle("終了時刻", isOn: $hasEnd)
                 if hasEnd {
-                    DatePicker("終了", selection: $end, in: start...)
+                    DatePicker("終了", selection: timeInDay($end), displayedComponents: .hourAndMinute)
                 }
                 if entry.isImported {
                     Toggle("隠す", isOn: $isHidden)
@@ -53,6 +57,7 @@ struct EntryEditor: View {
             }
         }
         .onAppear {
+            day = DiaryDay(containing: entry.start, boundaryHour: AppSettings.boundaryHour)
             text = entry.text
             start = entry.start
             hasEnd = entry.end != nil
@@ -62,6 +67,17 @@ struct EntryEditor: View {
         #if os(macOS)
         .frame(minWidth: 420, minHeight: 320)
         #endif
+    }
+
+    /// 選んだ「時:分」を、この記録の日記の日の中の日時にする
+    private func timeInDay(_ date: Binding<Date>) -> Binding<Date> {
+        Binding(
+            get: { date.wrappedValue },
+            set: { picked in
+                let c = DoseiFormatter.japaneseCalendar.dateComponents([.hour, .minute], from: picked)
+                date.wrappedValue = day.date(
+                    hour: c.hour ?? 0, minute: c.minute ?? 0, boundaryHour: AppSettings.boundaryHour)
+            })
     }
 
     private func save() {
