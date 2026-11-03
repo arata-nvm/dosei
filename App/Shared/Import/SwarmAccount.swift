@@ -1,5 +1,5 @@
-import Foundation
 import DoseiCore
+import Foundation
 
 /// Swarm のトークンの保存場所（iCloud キーチェーン。iPhone と Mac で共有される）
 enum SwarmAccount {

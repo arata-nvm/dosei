@@ -1,5 +1,5 @@
-import Foundation
 import DoseiCore
+import Foundation
 
 /// 設定値（端末ごと、UserDefaults）。画面では同じキーを @AppStorage で使う。
 enum AppSettings {
@@ -17,7 +17,8 @@ enum AppSettings {
         let id = id.trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: CharacterSet(charactersIn: "@"))
         guard !id.isEmpty,
-              let escaped = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) else { return base }
+            let escaped = id.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
+        else { return base }
         return URL(string: "@\(escaped)/posts/new", relativeTo: base)?.absoluteURL ?? base
     }
 

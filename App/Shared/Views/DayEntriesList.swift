@@ -1,6 +1,6 @@
-import SwiftUI
-import SwiftData
 import DoseiCore
+import SwiftData
+import SwiftUI
 
 /// その日の記録の一覧。@Query の条件に日付を入れるため、日付ごとに作る。
 struct DayEntriesList: View {
@@ -32,8 +32,10 @@ struct DayEntriesList: View {
             Button("ここまで", systemImage: "stop.circle") { entry.finish() }
         }
         if entry.isImported {
-            Button(entry.isHidden ? "表示" : "隠す",
-                   systemImage: entry.isHidden ? "eye" : "eye.slash") { entry.isHidden.toggle() }
+            Button(
+                entry.isHidden ? "表示" : "隠す",
+                systemImage: entry.isHidden ? "eye" : "eye.slash"
+            ) { entry.isHidden.toggle() }
         } else {
             Button("削除", systemImage: "trash", role: .destructive) { context.delete(entry) }
         }

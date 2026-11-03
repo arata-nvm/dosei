@@ -18,15 +18,19 @@ enum SettingsSync {
         let center = NotificationCenter.default
         observers = [
             // 別の端末で変わった
-            center.addObserver(forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
-                               object: cloud, queue: .main) { _ in pull() },
+            center.addObserver(
+                forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
+                object: cloud, queue: .main
+            ) { _ in pull() },
             // この端末で変わった
-            center.addObserver(forName: UserDefaults.didChangeNotification,
-                               object: local, queue: .main) { _ in push() },
+            center.addObserver(
+                forName: UserDefaults.didChangeNotification,
+                object: local, queue: .main
+            ) { _ in push() },
         ]
         cloud.synchronize()
-        pull()   // iCloud にある値を先に反映
-        push()   // iCloud にまだない値を上げる
+        pull()  // iCloud にある値を先に反映
+        push()  // iCloud にまだない値を上げる
     }
 
     private static var cloud: NSUbiquitousKeyValueStore { .default }
@@ -49,7 +53,7 @@ enum SettingsSync {
     private static func same(_ a: Any?, _ b: Any?) -> Bool {
         switch (a as? NSObject, b as? NSObject) {
         case (nil, nil): true
-        case let (x?, y?): x.isEqual(y)
+        case (let x?, let y?): x.isEqual(y)
         default: false
         }
     }

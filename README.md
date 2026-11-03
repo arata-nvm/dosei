@@ -62,3 +62,18 @@ App/Config                  entitlements と Info.plist（iPhone / Mac 別）
 
 首相動静の規則は `DoseiFormatter.swift` に書いてある。
 `swift test`（`Packages/DoseiCore` で実行）で、その規則どおりに文章が組み立てられることを確かめている。
+
+## 開発
+
+```bash
+xcrun swift-format -i -r App Packages      # 整形（設定は .swift-format）
+xcrun swift-format lint --strict -r App Packages
+cd Packages/DoseiCore && swift test        # 文体などのテスト
+```
+
+GitHub Actions（`.github/workflows/ci.yml`）で、push と PR のたびに次を確かめる。
+
+- **Format**：`swift format lint --strict`（Linux、Swift 6.0.3）
+- **Test**：DoseiCore の `swift test`（Linux）
+- **Build**：`xcodegen` → iOS シミュレータ向けと Mac 向けに署名なしでビルド（macOS）
+

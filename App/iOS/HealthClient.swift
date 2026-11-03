@@ -1,6 +1,6 @@
+import DoseiCore
 import Foundation
 import HealthKit
-import DoseiCore
 
 /// Apple Watch の睡眠とワークアウトをヘルスケアから読む（iPhone のみ）。
 enum HealthClient {
@@ -32,10 +32,12 @@ enum HealthClient {
         let from = day.startDate.addingTimeInterval(-10 * 3600)
         let to = day.endDate.addingTimeInterval(4 * 3600)
         let descriptor = HKSampleQueryDescriptor(
-            predicates: [.categorySample(
-                type: HKCategoryType(.sleepAnalysis),
-                predicate: HKQuery.predicateForSamples(withStart: from, end: to)
-            )],
+            predicates: [
+                .categorySample(
+                    type: HKCategoryType(.sleepAnalysis),
+                    predicate: HKQuery.predicateForSamples(withStart: from, end: to)
+                )
+            ],
             sortDescriptors: [SortDescriptor(\.startDate)]
         )
         let asleep = Set(HKCategoryValueSleepAnalysis.allAsleepValues.map(\.rawValue))
@@ -51,14 +53,18 @@ enum HealthClient {
 
     private static func workouts(for day: DiaryDay) async throws -> [ImportedRecord] {
         let descriptor = HKSampleQueryDescriptor(
-            predicates: [.workout(HKQuery.predicateForSamples(
-                withStart: day.startDate, end: day.endDate, options: .strictStartDate
-            ))],
+            predicates: [
+                .workout(
+                    HKQuery.predicateForSamples(
+                        withStart: day.startDate, end: day.endDate, options: .strictStartDate
+                    ))
+            ],
             sortDescriptors: [SortDescriptor(\.startDate)]
         )
         return try await descriptor.result(for: store).map {
-            ImportedRecord(sourceID: SourceID.workout($0.uuid), kind: .workout,
-                           start: $0.startDate, end: $0.endDate, text: name(of: $0.workoutActivityType))
+            ImportedRecord(
+                sourceID: SourceID.workout($0.uuid), kind: .workout,
+                start: $0.startDate, end: $0.endDate, text: name(of: $0.workoutActivityType))
         }
     }
 

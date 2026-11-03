@@ -5,7 +5,7 @@ let package = Package(
     name: "DoseiCore",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "DoseiCore", targets: ["DoseiCore"]),
+        .library(name: "DoseiCore", targets: ["DoseiCore"])
     ],
     targets: [
         .target(name: "DoseiCore"),

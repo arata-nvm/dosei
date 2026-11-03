@@ -38,7 +38,8 @@ public struct DoseiFormatter: Sendable {
     }
 
     public func format(_ items: [TimelineItem]) -> String {
-        let sorted = items
+        let sorted =
+            items
             .filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             .sorted { $0.start < $1.start }
         guard !sorted.isEmpty else { return "" }
@@ -93,10 +94,11 @@ public struct DoseiFormatter: Sendable {
     }
 
     static func zen(_ n: Int) -> String {
-        String(String(n).map { ch -> Character in
-            guard let v = ch.wholeNumberValue else { return ch }
-            return Character(UnicodeScalar(0xFF10 + v)!)
-        })
+        String(
+            String(n).map { ch -> Character in
+                guard let v = ch.wholeNumberValue else { return ch }
+                return Character(UnicodeScalar(0xFF10 + v)!)
+            })
     }
 
     static func trimPeriod(_ s: String) -> String {

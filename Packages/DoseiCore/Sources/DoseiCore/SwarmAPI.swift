@@ -1,4 +1,5 @@
 import Foundation
+
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -23,7 +24,7 @@ public struct SwarmAPI: Sendable {
 
         public var errorDescription: String? {
             switch self {
-            case let .http(code): "Swarm に接続できませんでした（\(code)）"
+            case .http(let code): "Swarm に接続できませんでした（\(code)）"
             }
         }
     }

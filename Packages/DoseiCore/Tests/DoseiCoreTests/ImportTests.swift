@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import DoseiCore
 
 final class ImportTests: XCTestCase {
@@ -6,17 +7,19 @@ final class ImportTests: XCTestCase {
 
     func testDecodeCheckins() throws {
         let json = """
-        {"meta":{"code":200},"response":{"checkins":{"count":2,"items":[
-          {"id":"a1","createdAt":1762128900,"shout":"無視される","venue":{"name":"スターバックス 渋谷店"}},
-          {"id":"b2","createdAt":1762140600}
-        ]}}}
-        """
+            {"meta":{"code":200},"response":{"checkins":{"count":2,"items":[
+              {"id":"a1","createdAt":1762128900,"shout":"無視される","venue":{"name":"スターバックス 渋谷店"}},
+              {"id":"b2","createdAt":1762140600}
+            ]}}}
+            """
         let checkins = try SwarmAPI.decodeCheckins(Data(json.utf8))
         XCTAssertEqual(checkins.count, 2)
-        XCTAssertEqual(checkins[0].record, ImportedRecord(
-            sourceID: "swarm-a1", kind: .checkin,
-            start: Date(timeIntervalSince1970: 1762128900), text: "スターバックス 渋谷店着"
-        ))
+        XCTAssertEqual(
+            checkins[0].record,
+            ImportedRecord(
+                sourceID: "swarm-a1", kind: .checkin,
+                start: Date(timeIntervalSince1970: 1762128900), text: "スターバックス 渋谷店着"
+            ))
         XCTAssertEqual(checkins[1].record.text, "（場所不明）着")
     }
 
@@ -56,9 +59,11 @@ final class ImportTests: XCTestCase {
 
     func testSleepRecords() {
         let wake = Date(timeIntervalSince1970: 1000)
-        XCTAssertEqual(ImportedRecord.sleep(wake: wake, bed: nil, day: day), [
-            ImportedRecord(sourceID: "hk-wake-2026-11-03", kind: .wake, start: wake, text: "起床"),
-        ])
+        XCTAssertEqual(
+            ImportedRecord.sleep(wake: wake, bed: nil, day: day),
+            [
+                ImportedRecord(sourceID: "hk-wake-2026-11-03", kind: .wake, start: wake, text: "起床")
+            ])
         XCTAssertEqual(ImportedRecord.sleep(wake: nil, bed: nil, day: day), [])
     }
 }

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import DoseiCore
 
 final class DoseiFormatterTests: XCTestCase {
@@ -33,7 +34,8 @@ final class DoseiFormatterTests: XCTestCase {
             .init(start: t(18, 1), text: "研究室発"),
             .init(start: t(18, 2), text: "自宅着"),
         ]
-        let expected = "\u{3000}"
+        let expected =
+            "\u{3000}"
             + "午前８時５２分、自宅発。同５３分、研究室着。同８時５９分から同９時４分まで、電車。"
             + "同５分から同６分まで、乗り換え。同７分から同８分まで、バス。"
             + "同９分から同１５分まで、コンビニ。同１１時３０分から同４２分まで、打ち合わせ。"
@@ -75,13 +77,14 @@ final class DoseiFormatterTests: XCTestCase {
         XCTAssertEqual(d, DiaryDay(year: 2026, month: 11, day: 2))
         XCTAssertEqual(DiaryDay(containing: t(4, 0, day: 3)), DiaryDay(year: 2026, month: 11, day: 3))
         XCTAssertEqual(DiaryDay(year: 2026, month: 11, day: 3).title(), "11月3日（火）")
-        XCTAssertEqual(DiaryDay(year: 2026, month: 11, day: 30).adding(days: 1), DiaryDay(year: 2026, month: 12, day: 1))
+        XCTAssertEqual(
+            DiaryDay(year: 2026, month: 11, day: 30).adding(days: 1), DiaryDay(year: 2026, month: 12, day: 1))
     }
 
     func testSleep() {
         let raw: [TimeSpan] = [
             .init(start: t(0, 40), end: t(3, 0)),
-            .init(start: t(3, 20), end: t(7, 40)),   // 20分の中途覚醒はつなぐ
+            .init(start: t(3, 20), end: t(7, 40)),  // 20分の中途覚醒はつなぐ
             .init(start: t(14, 0), end: t(14, 30)),  // 昼寝
             .init(start: t(23, 50), end: t(6, 0, day: 3)),
         ]

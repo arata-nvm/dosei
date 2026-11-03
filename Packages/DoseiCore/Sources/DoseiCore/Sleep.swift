@@ -40,12 +40,14 @@ public enum SleepAnalyzer {
         let h: (Double) -> Date = { dayStart.addingTimeInterval($0 * 3600) }
 
         // 起床: 区切り〜その12時間後（既定で午前4時〜午後4時）に終わった睡眠
-        let wakeSession = sessions
+        let wakeSession =
+            sessions
             .filter { $0.end >= dayStart && $0.end < h(12) }
             .max { $0.duration < $1.duration }
 
         // 就寝: 区切りの14時間後〜26時間後（既定で午後6時〜翌午前6時）に始まった睡眠
-        let bedSession = sessions
+        let bedSession =
+            sessions
             .filter { $0.start >= h(14) && $0.start < h(26) }
             .max { $0.duration < $1.duration }
 

@@ -63,7 +63,8 @@ private final class SwipeMonitor {
             fired = false
         }
         if event.phase.contains(.changed), !fired,
-           abs(event.scrollingDeltaX) > abs(event.scrollingDeltaY) {
+            abs(event.scrollingDeltaX) > abs(event.scrollingDeltaY)
+        {
             // 「ナチュラルなスクロール」の設定によらず、指の向きにそろえる
             let fingerDX = event.isDirectionInvertedFromDevice ? event.scrollingDeltaX : -event.scrollingDeltaX
             accumulated += fingerDX

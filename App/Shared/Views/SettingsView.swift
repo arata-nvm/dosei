@@ -1,6 +1,6 @@
-import SwiftUI
-import DoseiCore
 import AuthenticationServices
+import DoseiCore
+import SwiftUI
 
 struct SettingsView: View {
     @AppStorage(AppSettings.Key.nikkyID) private var nikkyID = ""
@@ -20,7 +20,7 @@ struct SettingsView: View {
                 TextField("Nikky の ID", text: $nikkyID)
                     .autocorrectionDisabled()
                     #if os(iOS)
-                    .textInputAutocapitalization(.never)
+                .textInputAutocapitalization(.never)
                     #endif
                 Picker("日付の区切り", selection: $boundaryHour) {
                     ForEach(0...8, id: \.self) { Text("午前\($0)時").tag($0) }

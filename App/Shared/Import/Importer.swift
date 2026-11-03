@@ -1,6 +1,6 @@
+import DoseiCore
 import Foundation
 import SwiftData
-import DoseiCore
 
 /// 記録の取り込み元（Swarm、ヘルスケア）。その日の分を ImportedRecord で返すだけで、保存はしない。
 protocol RecordSource {
@@ -34,16 +34,19 @@ enum Importer {
 
     /// - Returns: 表示するエラーメッセージ。キャンセルされただけのものは含めない。
     @discardableResult
-    static func importDay(_ day: DiaryDay, from sources: [any RecordSource],
-                          into context: ModelContext) async -> [String] {
+    static func importDay(
+        _ day: DiaryDay, from sources: [any RecordSource],
+        into context: ModelContext
+    ) async -> [String] {
         var errors: [String] = []
         for source in sources {
             do {
                 save(try await source.records(for: day), into: context)
-            } catch where !isCancellation(error) {
-                errors.append("\(source.name): \(error.localizedDescription)")
             } catch {
-                // 日付を切り替えて止められただけ
+                // 日付を切り替えて止められただけなら出さない
+                if !isCancellation(error) {
+                    errors.append("\(source.name): \(error.localizedDescription)")
+                }
             }
         }
         try? context.save()

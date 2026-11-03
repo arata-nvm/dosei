@@ -1,6 +1,6 @@
+import DoseiCore
 import Foundation
 import SwiftData
-import DoseiCore
 
 /// 日記の1行。
 ///
@@ -33,8 +33,9 @@ final class Entry {
 
 extension Entry {
     convenience init(_ record: ImportedRecord) {
-        self.init(start: record.start, end: record.end, text: record.text,
-                  kind: record.kind, sourceID: record.sourceID)
+        self.init(
+            start: record.start, end: record.end, text: record.text,
+            kind: record.kind, sourceID: record.sourceID)
     }
 
     var kind: RecordKind {

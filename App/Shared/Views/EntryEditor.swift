@@ -1,5 +1,5 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 /// 1行の編集。保存するまで Entry には書き込まない。
 struct EntryEditor: View {

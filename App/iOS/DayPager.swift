@@ -31,9 +31,10 @@ struct DayPager<Page: View>: UIViewControllerRepresentable {
             current.rootView = AnyView(page(offset))
         } else {
             // スワイプ以外で offset が変わったとき
-            controller.setViewControllers([coordinator.host(for: offset)],
-                                          direction: offset < current.offset ? .reverse : .forward,
-                                          animated: false)
+            controller.setViewControllers(
+                [coordinator.host(for: offset)],
+                direction: offset < current.offset ? .reverse : .forward,
+                animated: false)
         }
     }
 
@@ -57,20 +58,26 @@ struct DayPager<Page: View>: UIViewControllerRepresentable {
             return host
         }
 
-        func pageViewController(_ pageViewController: UIPageViewController,
-                                viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        func pageViewController(
+            _ pageViewController: UIPageViewController,
+            viewControllerBefore viewController: UIViewController
+        ) -> UIViewController? {
             guard let host = viewController as? PageHost, host.offset - 1 >= parent.range.lowerBound else { return nil }
             return self.host(for: host.offset - 1)
         }
 
-        func pageViewController(_ pageViewController: UIPageViewController,
-                                viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        func pageViewController(
+            _ pageViewController: UIPageViewController,
+            viewControllerAfter viewController: UIViewController
+        ) -> UIViewController? {
             guard let host = viewController as? PageHost, host.offset + 1 <= parent.range.upperBound else { return nil }
             return self.host(for: host.offset + 1)
         }
 
-        func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool,
-                                previousViewControllers: [UIViewController], transitionCompleted completed: Bool) {
+        func pageViewController(
+            _ pageViewController: UIPageViewController, didFinishAnimating finished: Bool,
+            previousViewControllers: [UIViewController], transitionCompleted completed: Bool
+        ) {
             guard completed, let host = pageViewController.viewControllers?.first as? PageHost else { return }
             parent.offset = host.offset
         }

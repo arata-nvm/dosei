@@ -1,6 +1,6 @@
-import SwiftUI
-import SwiftData
 import DoseiCore
+import SwiftData
+import SwiftUI
 
 /// メイン画面。その日の記録の一覧と入力欄。左右のスワイプで日付を変える。
 struct TodayView: View {
@@ -123,8 +123,9 @@ struct TodayView: View {
 
     /// その日の記録を首相動静の文体にしてコピーし、Nikky の投稿画面を開く
     private func postToNikky() {
-        let descriptor = FetchDescriptor<Entry>(predicate: Entry.on(day, includeHidden: false),
-                                                sortBy: [SortDescriptor(\.start)])
+        let descriptor = FetchDescriptor<Entry>(
+            predicate: Entry.on(day, includeHidden: false),
+            sortBy: [SortDescriptor(\.start)])
         let entries = (try? context.fetch(descriptor)) ?? []
         Pasteboard.copy(DoseiFormatter().format(entries.map(\.timelineItem)))
         openURL(AppSettings.nikkyNewPostURL(id: nikkyID))

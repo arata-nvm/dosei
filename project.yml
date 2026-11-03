@@ -26,6 +26,7 @@ targets:
         destinationFilters: [iOS]   # HealthKit は iPhone のみ
     dependencies:
       - package: DoseiCore
+    scheme: {}   # CI の xcodebuild -scheme Dosei 用
     settings:
       base:
         DEVELOPMENT_TEAM: "XXXXXXXXXX"            # ← Apple Developer の Team ID

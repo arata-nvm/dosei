@@ -1,6 +1,6 @@
+import DoseiCore
 import Foundation
 import HealthKit
-import DoseiCore
 
 /// ヘルスケアに睡眠やワークアウトが増えたら、iOS にアプリを裏で起こしてもらって取り込む。
 ///
@@ -19,8 +19,9 @@ enum HealthBackground {
             UserDefaults.standard.set(true, forKey: authorizationRequestedKey)
         }
         guard !started,
-              HealthClient.isAvailable,
-              UserDefaults.standard.bool(forKey: authorizationRequestedKey) else { return }
+            HealthClient.isAvailable,
+            UserDefaults.standard.bool(forKey: authorizationRequestedKey)
+        else { return }
         started = true
 
         for type in HealthClient.readTypes {
@@ -45,8 +46,9 @@ enum HealthBackground {
     private static func importRecent() async {
         let today = AppSettings.today
         for day in [today.adding(days: -1), today] {
-            await Importer.importDay(day, from: [HealthSource(requestsAuthorization: false)],
-                                     into: Store.container.mainContext)
+            await Importer.importDay(
+                day, from: [HealthSource(requestsAuthorization: false)],
+                into: Store.container.mainContext)
         }
     }
 }
