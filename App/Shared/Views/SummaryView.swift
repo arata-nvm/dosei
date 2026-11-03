@@ -29,9 +29,6 @@ struct SummaryView: View {
                     ToolbarItem(placement: .cancellationAction) {
                         Button("閉じる") { dismiss() }
                     }
-                    ToolbarItem {
-                        Button("リセット", systemImage: "arrow.counterclockwise", action: rebuild)
-                    }
                     ToolbarItem(placement: .confirmationAction) {
                         Button("コピーしてNikkyを開く") {
                             Pasteboard.copy(text)
@@ -40,6 +37,7 @@ struct SummaryView: View {
                     }
                 }
         }
+        // 開くたびに、その日の記録から作る
         .onAppear(perform: rebuild)
         #if os(macOS)
         .frame(minWidth: 480, minHeight: 420)
