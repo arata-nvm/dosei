@@ -65,6 +65,9 @@ struct TodayView: View {
             LazyHStack(spacing: 0) {
                 ForEach(-Self.maxDaysBack...0, id: \.self) { i in
                     DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
+                        // 外側の .defaultScrollAnchor(.trailing) は縦が中央なので、
+                        // 内側の一覧に引き継がれないよう上端を指定し直す
+                        .defaultScrollAnchor(.top)
                         .containerRelativeFrame([.horizontal, .vertical])
                 }
             }
