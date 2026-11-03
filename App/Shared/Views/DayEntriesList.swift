@@ -43,28 +43,42 @@ struct DayEntriesList: View {
 struct EntryRow: View {
     let entry: Entry
 
+    /// アイコンの欄の幅（文字の大きさの設定に合わせて変わる）
+    @ScaledMetric(relativeTo: .body) private var iconWidth = 24
+
     private static let timeFormat = Date.FormatStyle(date: .omitted, time: .shortened)
         .locale(Locale(identifier: "ja_JP"))
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
-            Text(timeText)
-                .font(.callout.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .frame(minWidth: 52, alignment: .trailing)
+            time
             Image(systemName: entry.kind.symbol)
                 .foregroundStyle(.tint)
-                .frame(width: 18)
+                .frame(width: iconWidth)
             Text(entry.text)
                 .strikethrough(entry.isHidden)
                 .foregroundStyle(entry.isHidden ? .secondary : .primary)
+                .multilineTextAlignment(.leading)
         }
+        // Mac の一覧では中央にそろうので、左にそろえる
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var timeText: String {
-        let start = entry.start.formatted(Self.timeFormat)
-        guard let end = entry.end else { return start }
-        return "\(start)–\(end.formatted(Self.timeFormat))"
+    /// 時刻の欄。見えない「00:00」と重ねて、どの行も同じ幅にそろえる（文字の大きさを変えても崩れない）。
+    /// 終了時刻は開始時刻の下に小さく出す。
+    private var time: some View {
+        ZStack(alignment: .topTrailing) {
+            Text("00:00").hidden()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(entry.start.formatted(Self.timeFormat))
+                if let end = entry.end {
+                    Text("–" + end.formatted(Self.timeFormat))
+                        .font(.caption.monospacedDigit())
+                }
+            }
+        }
+        .font(.callout.monospacedDigit())
+        .foregroundStyle(.secondary)
     }
 }
 
