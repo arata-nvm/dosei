@@ -19,8 +19,10 @@ enum Importer {
                 // 許可が出たあとでないと登録できないので、ここでも呼ぶ（2回目以降は何もしない）
                 HealthBackground.start(afterAuthorization: true)
                 try await importHealth(day, into: context)
-            } catch {
+            } catch where !isCancellation(error) {
                 report.messages.append("ヘルスケア: \(error.localizedDescription)")
+            } catch {
+                // キャンセルされただけ
             }
         }
         #endif
@@ -30,13 +32,22 @@ enum Importer {
                 for c in try await swarm.checkins(from: day.startDate, to: day.endDate) {
                     upsert(context, sourceID: "swarm-\(c.id)", kind: .checkin, start: c.date, text: "\(c.venue)着")
                 }
-            } catch {
+            } catch where !isCancellation(error) {
                 report.messages.append("Swarm: \(error.localizedDescription)")
+            } catch {
+                // キャンセルされただけ
             }
         }
 
         try? context.save()
         return report
+    }
+
+    /// 日付を切り替えて前の取り込みが止められただけなら、エラーとして出さない
+    static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        let ns = error as NSError
+        return ns.domain == NSURLErrorDomain && ns.code == NSURLErrorCancelled
     }
 
     #if os(iOS)

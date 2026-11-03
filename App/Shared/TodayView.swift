@@ -65,7 +65,12 @@ struct TodayView: View {
         } message: {
             Text(importMessages.joined(separator: "\n"))
         }
-        .task(id: day) { await runImport() }
+        .task(id: day) {
+            // スワイプで日付を次々に変えている間は取り込まない
+            try? await Task.sleep(for: .milliseconds(400))
+            guard !Task.isCancelled else { return }
+            await runImport()
+        }
         .refreshable { await runImport() }
     }
 
@@ -107,6 +112,7 @@ struct TodayView: View {
         importing = true
         let report = await Importer.importDay(day, into: context)
         importing = false
+        guard !Task.isCancelled else { return }
         importMessages = report.messages
     }
 
