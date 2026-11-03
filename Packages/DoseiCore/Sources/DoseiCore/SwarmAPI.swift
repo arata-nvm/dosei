@@ -15,7 +15,8 @@ public struct SwarmAPI: Sendable {
         public var venue: String
 
         public var record: ImportedRecord {
-            ImportedRecord(sourceID: SourceID.swarm(id), kind: .checkin, start: date, text: "\(venue)着")
+            // 着いたとき・途中・出るときのどれでもチェックインするので、「着」「発」は付けない
+            ImportedRecord(sourceID: SourceID.swarm(id), kind: .checkin, start: date, text: venue)
         }
     }
 

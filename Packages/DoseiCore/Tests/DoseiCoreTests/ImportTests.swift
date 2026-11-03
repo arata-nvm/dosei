@@ -18,9 +18,9 @@ final class ImportTests: XCTestCase {
             checkins[0].record,
             ImportedRecord(
                 sourceID: "swarm-a1", kind: .checkin,
-                start: Date(timeIntervalSince1970: 1762128900), text: "スターバックス 渋谷店着"
+                start: Date(timeIntervalSince1970: 1762128900), text: "スターバックス 渋谷店"
             ))
-        XCTAssertEqual(checkins[1].record.text, "（場所不明）着")
+        XCTAssertEqual(checkins[1].record.text, "（場所不明）")
     }
 
     func testCheckinsURL() {
