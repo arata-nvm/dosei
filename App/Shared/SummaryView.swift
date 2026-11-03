@@ -15,7 +15,6 @@ struct SummaryView: View {
     @AppStorage(AppSettings.subjectKey) private var subject = ""
     @Query private var entries: [Entry]
     @State private var text = ""
-    @State private var copied = false
 
     static let nikkyURL = URL(string: "https://nikky.slimalized.dev/")!
 
@@ -30,33 +29,27 @@ struct SummaryView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("ここで直してからコピーできます（元の記録は変わりません）")
-                    .font(.footnote).foregroundStyle(.secondary)
-                TextEditor(text: $text)
-                    .font(.body)
-                    .scrollContentBackground(.hidden)
-                    .padding(8)
-                    .background(.background.secondary, in: RoundedRectangle(cornerRadius: 8))
-                HStack {
-                    Button("作り直す", action: rebuild)
-                    Spacer()
-                    Button(copied ? "コピーしました" : "コピー", action: copy)
-                        .buttonStyle(.bordered)
-                    Button("コピーしてNikkyを開く") {
-                        copy()
-                        openURL(Self.nikkyURL)
+            TextEditor(text: $text)
+                .font(.body)
+                .padding()
+                .navigationTitle(day.title())
+                #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+                #endif
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("閉じる") { dismiss() }
                     }
-                    .buttonStyle(.borderedProminent)
+                    ToolbarItem {
+                        Button("リセット", systemImage: "arrow.counterclockwise", action: rebuild)
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("コピーしてNikkyを開く") {
+                            copy()
+                            openURL(Self.nikkyURL)
+                        }
+                    }
                 }
-            }
-            .padding()
-            .navigationTitle("\(day.title())の動静")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("閉じる") { dismiss() }
-                }
-            }
         }
         .onAppear(perform: rebuild)
         #if os(macOS)
@@ -68,7 +61,6 @@ struct SummaryView: View {
         let items = entries.map { TimelineItem(start: $0.start, end: $0.end, text: $0.text) }
         let formatter = DoseiFormatter(subject: subject.isEmpty ? nil : subject)
         text = formatter.format(items)
-        copied = false
     }
 
     private func copy() {
@@ -78,6 +70,5 @@ struct SummaryView: View {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
         #endif
-        copied = true
     }
 }

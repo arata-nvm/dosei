@@ -14,27 +14,21 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                TextField("名前（「高市首相」の位置に入ります。空なら付けません）", text: $subject)
-                Stepper("日付の区切り: 午前\(boundaryHour)時", value: $boundaryHour, in: 0...8)
-            } header: {
-                Text("日記")
-            } footer: {
-                Text("区切りより前の記録（深夜の就寝など）は前の日の日記に入ります。")
+                TextField("名前", text: $subject)
+                Picker("日付の区切り", selection: $boundaryHour) {
+                    ForEach(0...8, id: \.self) { Text("午前\($0)時").tag($0) }
+                }
             }
 
-            Section {
+            Section("Swarm") {
                 TextField("Client ID", text: $clientID)
-                Button("Swarm でログイン") { Task { await login() } }
-                    .disabled(clientID.isEmpty)
-                SecureField("アクセストークン（直接貼ることもできます）", text: $token)
+                SecureField("アクセストークン", text: $token)
                     .onSubmit { Keychain.set(token, for: SwarmClient.tokenAccount) }
+                Button("ログイン") { Task { await login() } }
+                    .disabled(clientID.isEmpty)
                 if let authError {
-                    Text(authError).foregroundStyle(.red).font(.footnote)
+                    Text(authError).foregroundStyle(.red)
                 }
-            } header: {
-                Text("Swarm")
-            } footer: {
-                Text("Foursquare の開発者ページでアプリを作り、Redirect URI に \(SwarmClient.redirectURI) を登録してください。トークンは iCloud キーチェーンに保存され、Mac とも共有されます。")
             }
         }
         .formStyle(.grouped)
@@ -61,7 +55,7 @@ struct SettingsView: View {
                 Keychain.set(t, for: SwarmClient.tokenAccount)
                 authError = nil
             } else {
-                authError = "トークンを受け取れませんでした: \(callback.absoluteString)"
+                authError = "ログインできませんでした"
             }
         } catch {
             authError = error.localizedDescription

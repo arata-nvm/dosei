@@ -17,14 +17,12 @@ struct EntryEditor: View {
             Form {
                 TextField("やったこと", text: $text, axis: .vertical)
                 DatePicker("時刻", selection: $start)
-                Toggle("終わりの時刻（〜から〜まで）", isOn: $hasEnd)
+                Toggle("終了時刻", isOn: $hasEnd)
                 if hasEnd {
-                    DatePicker("終わり", selection: $end, in: start...)
+                    DatePicker("終了", selection: $end, in: start...)
                 }
                 if entry.sourceID != nil {
-                    Toggle("日記に載せない", isOn: $isHidden)
-                    Text("取り込んだ記録です。ここで直した内容は、次に取り込んでも上書きされません。")
-                        .font(.footnote).foregroundStyle(.secondary)
+                    Toggle("隠す", isOn: $isHidden)
                 } else {
                     Button("削除", role: .destructive) {
                         context.delete(entry)

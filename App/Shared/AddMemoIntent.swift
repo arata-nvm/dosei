@@ -4,9 +4,9 @@ import SwiftData
 /// Siri・ショートカット・アクションボタンから、アプリを開かずに一言記録する。
 struct AddMemoIntent: AppIntent {
     static var title: LocalizedStringResource = "動静を記録"
-    static var description = IntentDescription("いまの時刻で、やったことを記録します。")
+    static var description = IntentDescription("やったことを記録")
 
-    @Parameter(title: "やったこと", requestValueDialog: "何をしていますか？")
+    @Parameter(title: "やったこと", requestValueDialog: "やったこと")
     var text: String
 
     @MainActor

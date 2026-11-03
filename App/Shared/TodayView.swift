@@ -53,7 +53,7 @@ struct TodayView: View {
             NavigationStack { SettingsView() }
         }
         #endif
-        .alert("取り込みでエラー", isPresented: .constant(!importMessages.isEmpty)) {
+        .alert("取り込めませんでした", isPresented: .constant(!importMessages.isEmpty)) {
             Button("OK") { importMessages = [] }
         } message: {
             Text(importMessages.joined(separator: "\n"))
@@ -66,13 +66,15 @@ struct TodayView: View {
 
     private var inputBar: some View {
         HStack(spacing: 8) {
-            TextField(isToday ? "いま何してる？" : "この日に追加（時刻はあとで直せます）", text: $draft)
+            TextField("やったこと", text: $draft)
                 .textFieldStyle(.roundedBorder)
                 .focused($inputFocused)
                 .onSubmit(add)
                 .submitLabel(.done)
             Button(action: add) {
-                Image(systemName: "arrow.up.circle.fill").font(.title2)
+                Label("記録", systemImage: "arrow.up.circle.fill")
+                    .labelStyle(.iconOnly)
+                    .font(.title2)
             }
             .buttonStyle(.plain)
             .disabled(draft.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -106,10 +108,10 @@ struct TodayView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
-            Button { withAnimation { offset -= 1 } } label: { Image(systemName: "chevron.left") }
+            Button { withAnimation { offset -= 1 } } label: { Label("前の日", systemImage: "chevron.left") }
                 .keyboardShortcut("[", modifiers: .command)
                 .disabled(offset <= -Self.maxDaysBack)
-            Button { withAnimation { offset += 1 } } label: { Image(systemName: "chevron.right") }
+            Button { withAnimation { offset += 1 } } label: { Label("次の日", systemImage: "chevron.right") }
                 .keyboardShortcut("]", modifiers: .command)
                 .disabled(offset >= 0)
         }
@@ -118,14 +120,12 @@ struct TodayView: View {
                 ProgressView().controlSize(.small)
             } else {
                 Button { Task { await runImport() } } label: {
-                    Image(systemName: "arrow.triangle.2.circlepath")
+                    Label("取り込む", systemImage: "arrow.triangle.2.circlepath")
                 }
-                .help("Swarm とヘルスケアから取り込む")
             }
-            Button { showSummary = true } label: { Image(systemName: "doc.plaintext") }
-                .help("首相動静風にまとめる")
+            Button { showSummary = true } label: { Label("まとめる", systemImage: "doc.plaintext") }
             #if os(iOS)
-            Button { showSettings = true } label: { Image(systemName: "gearshape") }
+            Button { showSettings = true } label: { Label("設定", systemImage: "gearshape") }
             #endif
         }
     }
@@ -148,10 +148,6 @@ struct DayEntriesList: View {
 
     var body: some View {
         List {
-            if entries.isEmpty {
-                ContentUnavailableView("まだ何もありません", systemImage: "clock",
-                                       description: Text("下の欄にやったことを書くと、いまの時刻で記録されます"))
-            }
             ForEach(entries) { entry in
                 EntryRow(entry: entry)
                     .contentShape(Rectangle())
@@ -160,33 +156,38 @@ struct DayEntriesList: View {
                     // iPhone では横スワイプを日付の切り替えに使うので、行のスワイプは Mac だけ
                     .swipeActions(edge: .leading) {
                         if canEnd(entry) {
-                            Button("ここまで") { end(entry) }
+                            Button("ここまで", systemImage: "stop.circle") { end(entry) }
                                 .tint(.blue)
                         }
                     }
                     .swipeActions(edge: .trailing) {
                         if entry.sourceID == nil {
-                            Button("削除", role: .destructive) { context.delete(entry) }
+                            Button("削除", systemImage: "trash", role: .destructive) { context.delete(entry) }
                         } else {
                             // 取り込んだものは消すと次の取り込みで復活するので、隠す
-                            Button(entry.isHidden ? "表示" : "隠す") { entry.isHidden.toggle() }
+                            hideButton(entry)
                                 .tint(.gray)
                         }
                     }
                     #endif
                     .contextMenu {
-                        Button("編集") { editing = entry }
+                        Button("編集", systemImage: "pencil") { editing = entry }
                         if canEnd(entry) {
-                            Button("ここまで（いまの時刻で終わり）") { end(entry) }
+                            Button("ここまで", systemImage: "stop.circle") { end(entry) }
                         }
                         if entry.sourceID == nil {
-                            Button("削除", role: .destructive) { context.delete(entry) }
+                            Button("削除", systemImage: "trash", role: .destructive) { context.delete(entry) }
                         } else {
-                            Button(entry.isHidden ? "日記に載せる" : "日記に載せない") { entry.isHidden.toggle() }
+                            hideButton(entry)
                         }
                     }
             }
         }
+    }
+
+    private func hideButton(_ entry: Entry) -> some View {
+        Button(entry.isHidden ? "表示" : "隠す",
+               systemImage: entry.isHidden ? "eye" : "eye.slash") { entry.isHidden.toggle() }
     }
 
     private func canEnd(_ entry: Entry) -> Bool {

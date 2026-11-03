@@ -66,7 +66,7 @@ struct SwarmClient {
         case http(Int, String)
         var errorDescription: String? {
             switch self {
-            case let .http(code, body): "Swarm API がエラーを返しました (\(code)): \(body.prefix(200))"
+            case let .http(code, _): "Swarm に接続できませんでした（\(code)）"
             }
         }
     }
