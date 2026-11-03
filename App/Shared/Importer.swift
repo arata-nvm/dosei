@@ -16,17 +16,9 @@ enum Importer {
         if HealthImporter.isAvailable {
             do {
                 try await HealthImporter.requestAuthorization()
-                let sleep = try await HealthImporter.wakeAndBed(for: day)
-                if let wake = sleep.wake {
-                    upsert(context, sourceID: "hk-wake-\(day.key)", kind: .wake, start: wake, text: "起床")
-                }
-                if let bed = sleep.bed {
-                    upsert(context, sourceID: "hk-bed-\(day.key)", kind: .sleep, start: bed, text: "就寝")
-                }
-                for w in try await HealthImporter.workouts(for: day) {
-                    upsert(context, sourceID: "hk-workout-\(w.id.uuidString)", kind: .workout,
-                           start: w.start, end: w.end, text: w.name)
-                }
+                // 許可が出たあとでないと登録できないので、ここでも呼ぶ（2回目以降は何もしない）
+                HealthBackground.start(afterAuthorization: true)
+                try await importHealth(day, into: context)
             } catch {
                 report.messages.append("ヘルスケア: \(error.localizedDescription)")
             }
@@ -46,6 +38,24 @@ enum Importer {
         try? context.save()
         return report
     }
+
+    #if os(iOS)
+    /// ヘルスケアの分だけ取り込む。許可は求めない（バックグラウンドからも呼ばれるため）。
+    static func importHealth(_ day: DiaryDay, into context: ModelContext) async throws {
+        let sleep = try await HealthImporter.wakeAndBed(for: day)
+        if let wake = sleep.wake {
+            upsert(context, sourceID: "hk-wake-\(day.key)", kind: .wake, start: wake, text: "起床")
+        }
+        if let bed = sleep.bed {
+            upsert(context, sourceID: "hk-bed-\(day.key)", kind: .sleep, start: bed, text: "就寝")
+        }
+        for w in try await HealthImporter.workouts(for: day) {
+            upsert(context, sourceID: "hk-workout-\(w.id.uuidString)", kind: .workout,
+                   start: w.start, end: w.end, text: w.name)
+        }
+        try context.save()
+    }
+    #endif
 
     /// sourceID で既存を探し、なければ追加、あれば（手で直していなければ）更新する。
     /// iPhone と Mac で同時に取り込むと CloudKit 経由で重複しうるので、余分は消す。
