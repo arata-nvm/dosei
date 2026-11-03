@@ -1,5 +1,8 @@
 # XcodeGen の設定。`xcodegen` で Dosei.xcodeproj を作る。
 # 使う前に下の DEVELOPMENT_TEAM と BUNDLE_ID を自分のものに変える。
+#
+# iPhone と Mac を 1 つのターゲット（マルチプラットフォーム）で作る。
+# 実行先を「iPhone」か「My Mac」に切り替えるだけでよい。
 name: Dosei
 
 options:
@@ -8,67 +11,49 @@ options:
     macOS: "14.0"
   developmentLanguage: ja
 
-settings:
-  base:
-    DEVELOPMENT_TEAM: "XXXXXXXXXX"            # ← Apple Developer の Team ID
-    BUNDLE_ID: "dev.example.dosei"           # ← 自分の逆ドメインに
-    PRODUCT_BUNDLE_IDENTIFIER: "$(BUNDLE_ID)" # iPhone と Mac で同じ ID（キーチェーンと iCloud を共有するため）
-    PRODUCT_NAME: "動静"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
-    SWIFT_VERSION: "5.0"
-    CODE_SIGN_STYLE: Automatic
-    GENERATE_INFOPLIST_FILE: YES
-    INFOPLIST_KEY_CFBundleDisplayName: "動静"
-
 packages:
   DoseiCore:
     path: Packages/DoseiCore
 
 targets:
-  Dosei-iOS:
+  Dosei:
     type: application
-    platform: iOS
+    platform: auto
+    supportedDestinations: [iOS, macOS]
     sources:
-      - App/Shared
-      - App/iOS
+      - path: App/Shared
+      - path: App/iOS
+        destinationFilters: [iOS]   # HealthKit は iPhone のみ
     dependencies:
       - package: DoseiCore
     settings:
       base:
+        DEVELOPMENT_TEAM: "XXXXXXXXXX"            # ← Apple Developer の Team ID
+        BUNDLE_ID: "dev.example.dosei"            # ← 自分の逆ドメインに
+        PRODUCT_BUNDLE_IDENTIFIER: "$(BUNDLE_ID)"
+        PRODUCT_NAME: "動静"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: "動静"
+
+        # 「My Mac (Designed for iPad)」や Catalyst の実行先を出さない
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        SUPPORTS_MACCATALYST: NO
         TARGETED_DEVICE_FAMILY: "1"
+
+        # iPhone
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphoneos*]": App/Config/iOS.entitlements
+        "CODE_SIGN_ENTITLEMENTS[sdk=iphonesimulator*]": App/Config/iOS.entitlements
+        "INFOPLIST_FILE[sdk=iphoneos*]": App/Config/iOS-Info.plist
+        "INFOPLIST_FILE[sdk=iphonesimulator*]": App/Config/iOS-Info.plist
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_NSHealthShareUsageDescription: "Apple Watch の睡眠とワークアウトから、起床・就寝・移動の時刻を日記に入れるために使います。"
-    info:
-      path: App/iOS/Info.plist
-      properties:
-        UIBackgroundModes: [remote-notification]
-    entitlements:
-      path: App/iOS/Dosei.entitlements
-      properties:
-        com.apple.developer.healthkit: true
-        com.apple.developer.healthkit.access: []
-        com.apple.developer.icloud-services: [CloudKit]
-        com.apple.developer.icloud-container-identifiers: ["iCloud.$(BUNDLE_ID)"]
-        aps-environment: development
 
-  Dosei-macOS:
-    type: application
-    platform: macOS
-    sources:
-      - App/Shared
-    dependencies:
-      - package: DoseiCore
-    settings:
-      base:
+        # Mac
+        "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Config/macOS.entitlements
+        "ENABLE_HARDENED_RUNTIME[sdk=macosx*]": YES
         INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.lifestyle"
-        ENABLE_HARDENED_RUNTIME: YES
-    entitlements:
-      path: App/macOS/Dosei.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-        com.apple.security.network.client: true
-        com.apple.developer.icloud-services: [CloudKit]
-        com.apple.developer.icloud-container-identifiers: ["iCloud.$(BUNDLE_ID)"]
-        com.apple.developer.aps-environment: development

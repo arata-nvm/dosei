@@ -22,7 +22,7 @@ brew install xcodegen
 1. `project.yml` の `DEVELOPMENT_TEAM`（Team ID）と `BUNDLE_ID` を自分のものに変える
 2. `xcodegen` を実行して `Dosei.xcodeproj` を開く
 3. iCloud コンテナ `iCloud.<BUNDLE_ID>` は初回ビルド時に Xcode が作る（Signing & Capabilities で確認）
-4. `Dosei-iOS` を実機で、`Dosei-macOS` を Mac で実行
+4. ターゲット `Dosei` の実行先を iPhone か My Mac にして実行
 
 ### Swarm
 
@@ -34,9 +34,10 @@ brew install xcodegen
 ## 構成
 
 ```
-Packages/DoseiCore   文体の組み立て・日付の区切り・睡眠の判定（プラットフォーム非依存、テストあり）
+Packages/DoseiCore    文体の組み立て・日付の区切り・睡眠の判定（プラットフォーム非依存、テストあり）
 App/Shared            SwiftUI（iPhone / Mac 共通）、SwiftData + CloudKit、Swarm
-App/iOS               HealthKit
+App/iOS               HealthKit（iPhone のときだけビルド）
+App/Config            entitlements と Info.plist（iPhone / Mac 別）
 ```
 
 首相動静の規則は `DoseiFormatter.swift` に書いてある。
