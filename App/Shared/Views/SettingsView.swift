@@ -9,7 +9,9 @@ struct SettingsView: View {
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.dismiss) private var dismiss
 
-    @State private var token = SwarmAccount.token ?? ""
+    /// トークンは iCloud キーチェーンで共有されるので、別の端末でログインしていればログイン済みになる
+    @State private var isLoggedIn = SwarmAccount.token != nil
+    @State private var tokenDraft = ""
     @State private var authError: String?
 
     var body: some View {
@@ -22,11 +24,19 @@ struct SettingsView: View {
             }
 
             Section("Swarm") {
-                TextField("Client ID", text: $clientID)
-                SecureField("アクセストークン", text: $token)
-                    .onSubmit { SwarmAccount.token = token }
-                Button("ログイン") { Task { await login() } }
-                    .disabled(clientID.isEmpty)
+                if isLoggedIn {
+                    Label("ログイン済み", systemImage: "checkmark.circle")
+                    Button("ログアウト", role: .destructive) {
+                        SwarmAccount.token = nil
+                        isLoggedIn = false
+                    }
+                } else {
+                    TextField("Client ID", text: $clientID)
+                    Button("ログイン") { Task { await login() } }
+                        .disabled(clientID.isEmpty)
+                    SecureField("アクセストークン", text: $tokenDraft)
+                        .onSubmit(saveTokenDraft)
+                }
                 if let authError {
                     Text(authError).foregroundStyle(.red)
                 }
@@ -34,7 +44,7 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("設定")
-        .onDisappear { SwarmAccount.token = token }
+        .onDisappear(perform: saveTokenDraft)
         #if os(iOS)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -47,13 +57,22 @@ struct SettingsView: View {
         #endif
     }
 
+    /// トークンを直接貼ったとき
+    private func saveTokenDraft() {
+        let t = tokenDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return }
+        SwarmAccount.token = t
+        tokenDraft = ""
+        isLoggedIn = true
+    }
+
     private func login() async {
         guard let url = SwarmAPI.authorizeURL(clientID: clientID) else { return }
         do {
             let callback = try await webAuth.authenticate(using: url, callbackURLScheme: SwarmAPI.callbackScheme)
             if let t = SwarmAPI.token(fromCallback: callback) {
-                token = t
                 SwarmAccount.token = t
+                isLoggedIn = true
                 authError = nil
             } else {
                 authError = "ログインできませんでした"

@@ -138,6 +138,8 @@ struct TodayView: View {
         }
         #endif
         ToolbarItemGroup(placement: .primaryAction) {
+            #if os(macOS)
+            // iPhone は下に引っぱって取り込む（バーが狭いので出さない）
             if importing {
                 ProgressView().controlSize(.small)
             } else {
@@ -145,6 +147,7 @@ struct TodayView: View {
                     Task { await runImport() }
                 }
             }
+            #endif
             Button("まとめる", systemImage: "doc.plaintext") { showSummary = true }
             #if os(iOS)
             Button("設定", systemImage: "gearshape") { showSettings = true }
