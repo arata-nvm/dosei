@@ -8,6 +8,10 @@ struct TodayView: View {
     /// 起動した日を基準に、何日前を見ているか（0 = 今日、-1 = 昨日）
     @State private var baseDay = AppSettings.today
     @State private var offset = 0
+    #if os(iOS)
+    /// 横スクロールで見えているページ（offset と同じ数え方）
+    @State private var visiblePage: Int? = 0
+    #endif
     @State private var draft = ""
     @State private var importing = false
     @State private var importErrors: [String] = []
@@ -55,13 +59,24 @@ struct TodayView: View {
     @ViewBuilder
     private var pages: some View {
         #if os(iOS)
-        TabView(selection: $offset) {
-            ForEach(pageRange, id: \.self) { i in
-                DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
-                    .tag(i)
+        // 横スクロールをページ単位で止める。LazyHStack は見えているページしか作らないので、
+        // 全日分を並べても重くならず、スクロール中に作り直しも起きない。
+        ScrollView(.horizontal) {
+            LazyHStack(spacing: 0) {
+                ForEach(-Self.maxDaysBack...0, id: \.self) { i in
+                    DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
+                        .containerRelativeFrame([.horizontal, .vertical])
+                }
             }
+            .scrollTargetLayout()
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
+        .scrollTargetBehavior(.paging)
+        .scrollPosition(id: $visiblePage)
+        .defaultScrollAnchor(.trailing)   // 今日（右端）から始める
+        .scrollIndicators(.hidden)
+        .onChange(of: visiblePage) { _, page in
+            if let page { offset = page }
+        }
         #else
         DayEntriesList(day: day, editing: $editing)
             .onTrackpadSwipe(isEnabled: editing == nil && !showSummary) { direction in
@@ -71,12 +86,6 @@ struct TodayView: View {
                 }
             }
         #endif
-    }
-
-    /// 作っておくページ。全日分を作ると起動とスワイプが重くなるので、前後2日だけにする。
-    /// ID は「今日から何日前か」なので、範囲がずれても同じページとして扱われる。
-    private var pageRange: ClosedRange<Int> {
-        max(offset - 2, -Self.maxDaysBack)...min(offset + 2, 0)
     }
 
     private func goBack() {
