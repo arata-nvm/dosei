@@ -30,12 +30,8 @@ struct EntryEditor: View {
                             text = new.filter { !$0.isNewline }
                         }
                     }
-                // 日付と時刻は別の欄にする（一緒だと、時刻を直すつもりで日付まで動いてしまう）。
-                // 日付は今日までにして、見えない先の日には移せないようにする
-                DatePicker(
-                    "日付", selection: dayBinding,
-                    in: ...AppSettings.today.date(hour: 23, minute: 59, boundaryHour: AppSettings.boundaryHour),
-                    displayedComponents: .date)
+                // 日付と時刻は別の欄にする（一緒だと、時刻を直すつもりで日付まで動いてしまう）
+                DatePicker("日付", selection: dayBinding, displayedComponents: .date)
                 DatePicker("時刻", selection: timeInDay($start), displayedComponents: .hourAndMinute)
                 Toggle("終了時刻", isOn: $hasEnd)
                 if hasEnd {
