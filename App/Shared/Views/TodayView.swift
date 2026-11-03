@@ -126,6 +126,8 @@ struct TodayView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
+        #if os(macOS)
+        // iPhone はスワイプで変えるので矢印を出さない（バーが狭く、日付が隠れるため）
         ToolbarItemGroup(placement: .navigation) {
             Button("前の日", systemImage: "chevron.left") { withAnimation { goBack() } }
                 .keyboardShortcut("[", modifiers: .command)
@@ -134,6 +136,7 @@ struct TodayView: View {
                 .keyboardShortcut("]", modifiers: .command)
                 .disabled(offset >= 0)
         }
+        #endif
         ToolbarItemGroup(placement: .primaryAction) {
             if importing {
                 ProgressView().controlSize(.small)
