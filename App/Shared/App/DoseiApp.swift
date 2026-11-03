@@ -4,6 +4,8 @@ import SwiftData
 @main
 struct DoseiApp: App {
     init() {
+        // Nikky の ID などの設定を iPhone と Mac でそろえる
+        SettingsSync.start()
         #if os(iOS)
         // バックグラウンドで起こされたときも含め、起動のたびにヘルスケアの監視を登録し直す
         HealthBackground.start()
