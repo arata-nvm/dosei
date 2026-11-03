@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@800&display=block" rel="stylesheet">
+<style>
+  :root { --paper: #F3EFE6; --ink: #1B1B1B; --red: #C8322B; --navy: #1E2A3A; }
+  body { margin: 0; background: #E9E6E0; font-family: "Hiragino Sans", "IPAPGothic", sans-serif; }
+  .grid { display: grid; grid-template-columns: repeat(3, 300px); gap: 40px 48px; padding: 48px; }
+  figure { margin: 0; text-align: center; }
+  .icon { width: 240px; height: 240px; border-radius: 54px; overflow: hidden;
+          box-shadow: 0 6px 18px rgba(0,0,0,.18); margin: 0 auto 14px; }
+  .icon svg { width: 100%; height: 100%; display: block; }
+  figcaption b { display: block; font-size: 17px; margin-bottom: 4px; }
+  figcaption span { font-size: 13px; color: #555; line-height: 1.5; }
+  .mincho { font-family: "Shippori Mincho B1", serif; font-weight: 800; }
+  /* 個別書き出し用：角丸なし・1024px */
+  body.single { background: none; }
+  body.single .grid { display: block; padding: 0; }
+  body.single figure:not(.target) { display: none; }
+  body.single .icon { width: 1024px; height: 1024px; border-radius: 0; box-shadow: none; margin: 0; }
+  body.single figcaption { display: none; }
+</style>
+</head>
+<body>
+<div class="grid">
+
+  <!-- A: 同 -->
+  <figure id="a">
+    <div class="icon"><svg viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="var(--paper)"/>
+      <text x="512" y="742" text-anchor="middle" font-size="620" class="mincho" fill="var(--ink)">同</text>
+      <circle cx="852" cy="176" r="52" fill="var(--red)"/>
+    </svg></div>
+    <figcaption><b>A「同」</b><span>首相動静の「同５３分、」の「同」。<br>赤い点は「いま」</span></figcaption>
+  </figure>
+
+  <!-- B: 縦書きの段 -->
+  <figure id="b">
+    <div class="icon"><svg viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="var(--paper)"/>
+      <g stroke="var(--ink)" stroke-width="44" stroke-linecap="round" opacity=".85">
+        <line x1="742" y1="200" x2="742" y2="824"/>
+        <line x1="622" y1="200" x2="622" y2="760"/>
+        <line x1="502" y1="200" x2="502" y2="824"/>
+        <line x1="382" y1="200" x2="382" y2="540"/>
+      </g>
+      <line x1="262" y1="200" x2="262" y2="420" stroke="var(--red)" stroke-width="44" stroke-linecap="round"/>
+    </svg></div>
+    <figcaption><b>B 縦書きの段</b><span>新聞の縦書きの行。<br>いちばん左の赤い行が、いま書いている行</span></figcaption>
+  </figure>
+
+  <!-- C: 8時52分の時計 -->
+  <figure id="c">
+    <div class="icon"><svg viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="var(--navy)"/>
+      <circle cx="512" cy="512" r="330" fill="none" stroke="var(--paper)" stroke-width="40"/>
+      <g stroke="var(--paper)" stroke-width="22" stroke-linecap="round">
+        <line x1="512" y1="222" x2="512" y2="262"/>
+        <line x1="802" y1="512" x2="762" y2="512"/>
+        <line x1="512" y1="802" x2="512" y2="762"/>
+        <line x1="222" y1="512" x2="262" y2="512"/>
+      </g>
+      <!-- 8時52分：短針 266°、長針 312° -->
+      <line x1="512" y1="512" x2="324" y2="499" stroke="var(--paper)" stroke-width="44" stroke-linecap="round"/>
+      <line x1="512" y1="512" x2="321" y2="340" stroke="var(--red)" stroke-width="28" stroke-linecap="round"/>
+      <circle cx="512" cy="512" r="30" fill="var(--paper)"/>
+    </svg></div>
+    <figcaption><b>C 午前８時５２分</b><span>記事の最初の一文「午前８時５２分、自宅発。」の時刻</span></figcaption>
+  </figure>
+
+  <!-- D: 印 -->
+  <figure id="d">
+    <div class="icon"><svg viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="var(--paper)"/>
+      <rect x="262" y="172" width="500" height="680" rx="56" fill="var(--red)"/>
+      <text x="512" y="470" text-anchor="middle" font-size="290" class="mincho" fill="var(--paper)">動</text>
+      <text x="512" y="770" text-anchor="middle" font-size="290" class="mincho" fill="var(--paper)">静</text>
+    </svg></div>
+    <figcaption><b>D 印</b><span>「動静」を縦に並べた朱印</span></figcaption>
+  </figure>
+
+  <!-- E: タイムライン -->
+  <figure id="e">
+    <div class="icon"><svg viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="var(--ink)"/>
+      <line x1="330" y1="230" x2="330" y2="794" stroke="#5A5A5A" stroke-width="20"/>
+      <g fill="var(--paper)">
+        <circle cx="330" cy="260" r="44"/><circle cx="330" cy="440" r="44"/><circle cx="330" cy="620" r="44"/>
+      </g>
+      <circle cx="330" cy="790" r="54" fill="var(--red)"/>
+      <g stroke="var(--paper)" stroke-width="40" stroke-linecap="round" opacity=".9">
+        <line x1="440" y1="260" x2="760" y2="260"/>
+        <line x1="440" y1="440" x2="680" y2="440"/>
+        <line x1="440" y1="620" x2="740" y2="620"/>
+      </g>
+      <line x1="440" y1="790" x2="600" y2="790" stroke="var(--red)" stroke-width="40" stroke-linecap="round"/>
+    </svg></div>
+    <figcaption><b>E タイムライン</b><span>アプリの一覧そのもの。<br>時刻の点と一行ずつの記録</span></figcaption>
+  </figure>
+
+  <!-- F: 動 -->
+  <figure id="f">
+    <div class="icon"><svg viewBox="0 0 1024 1024">
+      <rect width="1024" height="1024" fill="var(--red)"/>
+      <text x="512" y="736" text-anchor="middle" font-size="600" class="mincho" fill="var(--paper)">動</text>
+    </svg></div>
+    <figcaption><b>F「動」</b><span>朱色に白抜きの一文字。<br>ホーム画面で目立つ</span></figcaption>
+  </figure>
+
+</div>
+</body>
+</html>
