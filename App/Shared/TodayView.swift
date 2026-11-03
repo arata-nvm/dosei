@@ -4,7 +4,9 @@ import DoseiCore
 
 struct TodayView: View {
     @Environment(\.modelContext) private var context
-    @State private var day: DiaryDay = AppSettings.today
+    /// 起動した日を基準に、何日前を見ているか（0 = 今日、-1 = 昨日）
+    @State private var baseDay: DiaryDay = AppSettings.today
+    @State private var offset = 0
     @State private var draft = ""
     @State private var importing = false
     @State private var importMessages: [String] = []
@@ -13,11 +15,26 @@ struct TodayView: View {
     @State private var showSettings = false
     @FocusState private var inputFocused: Bool
 
+    private var day: DiaryDay { baseDay.adding(days: offset) }
     private var isToday: Bool { day == AppSettings.today }
+
+    /// スワイプでさかのぼれる日数
+    private static let maxDaysBack = 3650
 
     var body: some View {
         VStack(spacing: 0) {
+            #if os(iOS)
+            // 横スワイプで日付を変える
+            TabView(selection: $offset) {
+                ForEach(-Self.maxDaysBack...0, id: \.self) { i in
+                    DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
+                        .tag(i)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            #else
             DayEntriesList(day: day, editing: $editing)
+            #endif
             inputBar
         }
         .navigationTitle(day.title())
@@ -89,11 +106,12 @@ struct TodayView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .navigation) {
-            Button { day = day.adding(days: -1) } label: { Image(systemName: "chevron.left") }
+            Button { withAnimation { offset -= 1 } } label: { Image(systemName: "chevron.left") }
                 .keyboardShortcut("[", modifiers: .command)
-            Button { day = day.adding(days: 1) } label: { Image(systemName: "chevron.right") }
+                .disabled(offset <= -Self.maxDaysBack)
+            Button { withAnimation { offset += 1 } } label: { Image(systemName: "chevron.right") }
                 .keyboardShortcut("]", modifiers: .command)
-                .disabled(isToday)
+                .disabled(offset >= 0)
         }
         ToolbarItemGroup(placement: .primaryAction) {
             if importing {
@@ -138,13 +156,12 @@ struct DayEntriesList: View {
                 EntryRow(entry: entry)
                     .contentShape(Rectangle())
                     .onTapGesture { editing = entry }
+                    #if os(macOS)
+                    // iPhone では横スワイプを日付の切り替えに使うので、行のスワイプは Mac だけ
                     .swipeActions(edge: .leading) {
-                        if entry.end == nil && entry.kind == .memo {
-                            Button("ここまで") {
-                                entry.end = max(Date(), entry.start)
-                                entry.userEdited = true
-                            }
-                            .tint(.blue)
+                        if canEnd(entry) {
+                            Button("ここまで") { end(entry) }
+                                .tint(.blue)
                         }
                     }
                     .swipeActions(edge: .trailing) {
@@ -156,8 +173,12 @@ struct DayEntriesList: View {
                                 .tint(.gray)
                         }
                     }
+                    #endif
                     .contextMenu {
                         Button("編集") { editing = entry }
+                        if canEnd(entry) {
+                            Button("ここまで（いまの時刻で終わり）") { end(entry) }
+                        }
                         if entry.sourceID == nil {
                             Button("削除", role: .destructive) { context.delete(entry) }
                         } else {
@@ -166,6 +187,15 @@ struct DayEntriesList: View {
                     }
             }
         }
+    }
+
+    private func canEnd(_ entry: Entry) -> Bool {
+        entry.end == nil && entry.kind == .memo
+    }
+
+    private func end(_ entry: Entry) {
+        entry.end = max(Date(), entry.start)
+        entry.userEdited = true
     }
 }
 
