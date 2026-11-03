@@ -16,7 +16,11 @@ struct EntryEditor: View {
     var body: some View {
         NavigationStack {
             Form {
-                TextField("やったこと", text: $text, axis: .vertical)
+                // Form の中だと「左に項目名、右に入力欄」になり、文字が右にそろうので、
+                // 項目名は出さずに行の幅いっぱいにして左にそろえる
+                TextField("やったこと", text: $text, prompt: Text("やったこと"), axis: .vertical)
+                    .labelsHidden()
+                    .multilineTextAlignment(.leading)
                     // 折り返しはするが、改行は入れない
                     .onChange(of: text) { _, new in
                         if new.contains(where: \.isNewline) {
