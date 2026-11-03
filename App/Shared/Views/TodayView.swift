@@ -61,24 +61,24 @@ struct TodayView: View {
         #if os(iOS)
         // 横スクロールをページ単位で止める。LazyHStack は見えているページしか作らないので、
         // 全日分を並べても重くならず、スクロール中に作り直しも起きない。
-        ScrollView(.horizontal) {
-            LazyHStack(spacing: 0) {
-                ForEach(-Self.maxDaysBack...0, id: \.self) { i in
-                    DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
-                        // 外側の .defaultScrollAnchor(.trailing) は縦が中央なので、
-                        // 内側の一覧に引き継がれないよう上端を指定し直す
-                        .defaultScrollAnchor(.top)
-                        .containerRelativeFrame([.horizontal, .vertical])
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 0) {
+                    ForEach(-Self.maxDaysBack...0, id: \.self) { i in
+                        DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
+                            .containerRelativeFrame([.horizontal, .vertical])
+                    }
                 }
+                .scrollTargetLayout()
             }
-            .scrollTargetLayout()
-        }
-        .scrollTargetBehavior(.paging)
-        .scrollPosition(id: $visiblePage)
-        .defaultScrollAnchor(.trailing)   // 今日（右端）から始める
-        .scrollIndicators(.hidden)
-        .onChange(of: visiblePage) { _, page in
-            if let page { offset = page }
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: $visiblePage)
+            .scrollIndicators(.hidden)
+            // 今日（右端）から始める。.defaultScrollAnchor は縦の位置にも効いてしまうので使わない
+            .onAppear { proxy.scrollTo(0) }
+            .onChange(of: visiblePage) { _, page in
+                if let page { offset = page }
+            }
         }
         #else
         DayEntriesList(day: day, editing: $editing)
