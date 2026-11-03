@@ -45,15 +45,15 @@ final class DoseiFormatterTests: XCTestCase {
         XCTAssertEqual(DoseiFormatter().format(items), expected)
     }
 
-    func testSubjectHeaderAndExactHours() {
+    func testExactHours() {
         let items: [TimelineItem] = [
             .init(start: t(9, 0), text: "大学着"),
             .init(start: t(10, 0), end: t(12, 0), text: "講義"),
             .init(start: t(12, 30), text: "昼食。"),
         ]
         XCTAssertEqual(
-            DoseiFormatter(subject: "わたし").format(items),
-            "\u{3000}わたし\n\u{3000}午前９時、大学着。同１０時から午後０時まで、講義。同３０分、昼食。"
+            DoseiFormatter().format(items),
+            "\u{3000}午前９時、大学着。同１０時から午後０時まで、講義。同３０分、昼食。"
         )
     }
 

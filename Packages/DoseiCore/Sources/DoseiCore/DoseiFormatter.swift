@@ -25,12 +25,9 @@ public struct TimelineItem: Equatable, Sendable {
 /// - 数字は全角
 public struct DoseiFormatter: Sendable {
     public var calendar: Calendar
-    /// 冒頭に置く名前（「高市首相」に当たる部分）。nil なら付けない。
-    public var subject: String?
 
-    public init(calendar: Calendar = DoseiFormatter.japaneseCalendar, subject: String? = nil) {
+    public init(calendar: Calendar = DoseiFormatter.japaneseCalendar) {
         self.calendar = calendar
-        self.subject = subject
     }
 
     public static var japaneseCalendar: Calendar {
@@ -61,11 +58,7 @@ public struct DoseiFormatter: Sendable {
             }
         }
 
-        let body = "\u{3000}" + sentences.joined()
-        if let subject, !subject.isEmpty {
-            return "\u{3000}\(subject)\n\(body)"
-        }
-        return body
+        return "\u{3000}" + sentences.joined()
     }
 
     // MARK: - 時刻表現
