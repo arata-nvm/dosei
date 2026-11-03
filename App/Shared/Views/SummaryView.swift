@@ -30,10 +30,12 @@ struct SummaryView: View {
                         Button("閉じる") { dismiss() }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("コピーしてNikkyを開く") {
+                        // 文字だと長く、狭い画面では「…」に入ってしまうのでアイコンにする
+                        Button("コピーしてNikkyを開く", systemImage: "arrow.up.forward.app") {
                             Pasteboard.copy(text)
                             openURL(AppSettings.nikkyURL)
                         }
+                        .labelStyle(.iconOnly)
                     }
                 }
         }
