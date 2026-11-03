@@ -1,5 +1,5 @@
 # XcodeGen の設定。`xcodegen` で Dosei.xcodeproj を作る。
-# 使う前に下の DEVELOPMENT_TEAM と BUNDLE_ID を自分のものに変える。
+# 使う前に下の DEVELOPMENT_TEAM を自分の Team ID に変える。
 #
 # iPhone と Mac を 1 つのターゲット（マルチプラットフォーム）で作る。
 # 実行先を「iPhone」か「My Mac」に切り替えるだけでよい。
@@ -29,9 +29,9 @@ targets:
     settings:
       base:
         DEVELOPMENT_TEAM: "XXXXXXXXXX"            # ← Apple Developer の Team ID
-        BUNDLE_ID: "dev.example.dosei"            # ← 自分の逆ドメインに
+        BUNDLE_ID: "dev.arata-nvm.dosei"
         PRODUCT_BUNDLE_IDENTIFIER: "$(BUNDLE_ID)"
-        PRODUCT_NAME: "動静"
+        PRODUCT_NAME: "Dosei"
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"
