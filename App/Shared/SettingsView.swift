@@ -1,9 +1,11 @@
 import SwiftUI
+import AuthenticationServices
 
 struct SettingsView: View {
     @AppStorage(AppSettings.subjectKey) private var subject = ""
     @AppStorage(AppSettings.boundaryHourKey) private var boundaryHour = 4
     @AppStorage(AppSettings.swarmClientIDKey) private var clientID = ""
+    @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.dismiss) private var dismiss
 
     @State private var token = Keychain.get(SwarmClient.tokenAccount) ?? ""
@@ -53,7 +55,7 @@ struct SettingsView: View {
     private func login() async {
         guard let url = SwarmClient.authorizeURL(clientID: clientID) else { return }
         do {
-            let callback = try await WebAuth.shared.authenticate(url: url, callbackURLScheme: SwarmClient.callbackScheme)
+            let callback = try await webAuth.authenticate(using: url, callbackURLScheme: SwarmClient.callbackScheme)
             if let t = SwarmClient.token(fromCallback: callback) {
                 token = t
                 Keychain.set(t, for: SwarmClient.tokenAccount)
