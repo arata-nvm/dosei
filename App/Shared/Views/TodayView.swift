@@ -5,6 +5,8 @@ import DoseiCore
 /// メイン画面。その日の記録の一覧と入力欄。左右のスワイプで日付を変える。
 struct TodayView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.openURL) private var openURL
+    @AppStorage(AppSettings.Key.nikkyID) private var nikkyID = ""
     /// 起動した日を基準に、何日前を見ているか（0 = 今日、-1 = 昨日）
     @State private var baseDay = AppSettings.today
     @State private var offset = 0
@@ -12,7 +14,6 @@ struct TodayView: View {
     @State private var importing = false
     @State private var importErrors: [String] = []
     @State private var editing: Entry?
-    @State private var showSummary = false
     @State private var showSettings = false
 
     /// さかのぼれる日数
@@ -32,7 +33,6 @@ struct TodayView: View {
         #endif
         .toolbar { toolbar }
         .sheet(item: $editing) { EntryEditor(entry: $0) }
-        .sheet(isPresented: $showSummary) { SummaryView(day: day) }
         #if os(iOS)
         .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
         #endif
@@ -63,7 +63,7 @@ struct TodayView: View {
         }
         #else
         DayEntriesList(day: day, editing: $editing)
-            .onTrackpadSwipe(isEnabled: editing == nil && !showSummary) { direction in
+            .onTrackpadSwipe(isEnabled: editing == nil) { direction in
                 switch direction {
                 case .right: goBack()
                 case .left: goForward()
@@ -121,6 +121,15 @@ struct TodayView: View {
         importErrors = errors
     }
 
+    /// その日の記録を首相動静の文体にしてコピーし、Nikky の投稿画面を開く
+    private func postToNikky() {
+        let descriptor = FetchDescriptor<Entry>(predicate: Entry.on(day, includeHidden: false),
+                                                sortBy: [SortDescriptor(\.start)])
+        let entries = (try? context.fetch(descriptor)) ?? []
+        Pasteboard.copy(DoseiFormatter().format(entries.map(\.timelineItem)))
+        openURL(AppSettings.nikkyNewPostURL(id: nikkyID))
+    }
+
     // MARK: - ツールバー
 
     @ToolbarContentBuilder
@@ -147,7 +156,7 @@ struct TodayView: View {
                 }
             }
             #endif
-            Button("まとめる", systemImage: "doc.plaintext") { showSummary = true }
+            Button("コピーしてNikkyを開く", systemImage: "arrow.up.forward.app", action: postToNikky)
             #if os(iOS)
             Button("設定", systemImage: "gearshape") { showSettings = true }
             #endif
