@@ -26,9 +26,15 @@ enum Importer {
         return sources
     }
 
+    /// 使える取り込み元すべてから取り込む
+    @discardableResult
+    static func importDay(_ day: DiaryDay, into context: ModelContext) async -> [String] {
+        await importDay(day, from: sources, into: context)
+    }
+
     /// - Returns: 表示するエラーメッセージ。キャンセルされただけのものは含めない。
     @discardableResult
-    static func importDay(_ day: DiaryDay, from sources: [any RecordSource] = sources,
+    static func importDay(_ day: DiaryDay, from sources: [any RecordSource],
                           into context: ModelContext) async -> [String] {
         var errors: [String] = []
         for source in sources {

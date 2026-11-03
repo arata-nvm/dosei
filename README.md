@@ -50,6 +50,7 @@ App/Shared                  iPhone / Mac 共通
   Import/                   取り込み（RecordSource → Importer が Entry に保存）、Swarm のトークン
   Views/                    画面
   Support/                  プラットフォームごとの小物（クリップボード、Mac のスワイプ）
+  Assets.xcassets           アプリのアイコン（元データは design/icons.html の案 E）
 App/iOS                     iPhone のみ：ヘルスケアの読み取りとバックグラウンド配信
 App/Config                  entitlements と Info.plist（iPhone / Mac 別）
 ```
