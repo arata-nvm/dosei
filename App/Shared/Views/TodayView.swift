@@ -56,7 +56,7 @@ struct TodayView: View {
     private var pages: some View {
         #if os(iOS)
         TabView(selection: $offset) {
-            ForEach(-Self.maxDaysBack...0, id: \.self) { i in
+            ForEach(pageRange, id: \.self) { i in
                 DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
                     .tag(i)
             }
@@ -71,6 +71,12 @@ struct TodayView: View {
                 }
             }
         #endif
+    }
+
+    /// 作っておくページ。全日分を作ると起動とスワイプが重くなるので、前後2日だけにする。
+    /// ID は「今日から何日前か」なので、範囲がずれても同じページとして扱われる。
+    private var pageRange: ClosedRange<Int> {
+        max(offset - 2, -Self.maxDaysBack)...min(offset + 2, 0)
     }
 
     private func goBack() {
