@@ -1,14 +1,15 @@
 import SwiftUI
+import DoseiCore
 import AuthenticationServices
 
 struct SettingsView: View {
-    @AppStorage(AppSettings.subjectKey) private var subject = ""
-    @AppStorage(AppSettings.boundaryHourKey) private var boundaryHour = 4
-    @AppStorage(AppSettings.swarmClientIDKey) private var clientID = ""
+    @AppStorage(AppSettings.Key.subject) private var subject = ""
+    @AppStorage(AppSettings.Key.boundaryHour) private var boundaryHour = AppSettings.defaultBoundaryHour
+    @AppStorage(AppSettings.Key.swarmClientID) private var clientID = ""
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.dismiss) private var dismiss
 
-    @State private var token = Keychain.get(SwarmClient.tokenAccount) ?? ""
+    @State private var token = SwarmAccount.token ?? ""
     @State private var authError: String?
 
     var body: some View {
@@ -23,7 +24,7 @@ struct SettingsView: View {
             Section("Swarm") {
                 TextField("Client ID", text: $clientID)
                 SecureField("アクセストークン", text: $token)
-                    .onSubmit { Keychain.set(token, for: SwarmClient.tokenAccount) }
+                    .onSubmit { SwarmAccount.token = token }
                 Button("ログイン") { Task { await login() } }
                     .disabled(clientID.isEmpty)
                 if let authError {
@@ -33,7 +34,7 @@ struct SettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle("設定")
-        .onDisappear { Keychain.set(token, for: SwarmClient.tokenAccount) }
+        .onDisappear { SwarmAccount.token = token }
         #if os(iOS)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
@@ -47,12 +48,12 @@ struct SettingsView: View {
     }
 
     private func login() async {
-        guard let url = SwarmClient.authorizeURL(clientID: clientID) else { return }
+        guard let url = SwarmAPI.authorizeURL(clientID: clientID) else { return }
         do {
-            let callback = try await webAuth.authenticate(using: url, callbackURLScheme: SwarmClient.callbackScheme)
-            if let t = SwarmClient.token(fromCallback: callback) {
+            let callback = try await webAuth.authenticate(using: url, callbackURLScheme: SwarmAPI.callbackScheme)
+            if let t = SwarmAPI.token(fromCallback: callback) {
                 token = t
-                Keychain.set(t, for: SwarmClient.tokenAccount)
+                SwarmAccount.token = t
                 authError = nil
             } else {
                 authError = "ログインできませんでした"

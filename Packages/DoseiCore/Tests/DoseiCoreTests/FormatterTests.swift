@@ -79,7 +79,7 @@ final class DoseiFormatterTests: XCTestCase {
     }
 
     func testSleep() {
-        let raw: [DateInterval2] = [
+        let raw: [TimeSpan] = [
             .init(start: t(0, 40), end: t(3, 0)),
             .init(start: t(3, 20), end: t(7, 40)),   // 20分の中途覚醒はつなぐ
             .init(start: t(14, 0), end: t(14, 30)),  // 昼寝

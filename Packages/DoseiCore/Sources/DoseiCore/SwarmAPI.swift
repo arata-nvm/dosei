@@ -1,25 +1,43 @@
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
-/// Swarm（Foursquare API v2）から自分のチェックインを取ってくる。
-struct SwarmClient {
-    static let tokenAccount = "swarm-token"
-    static let callbackScheme = "dosei"
-    static let redirectURI = "dosei://swarm"
+/// Swarm（Foursquare API v2）。トークンの保存場所は知らない（アプリ側が渡す）。
+public struct SwarmAPI: Sendable {
+    public static let callbackScheme = "dosei"
+    public static let redirectURI = "dosei://swarm"
 
-    struct Checkin {
-        var id: String
-        var date: Date
-        var venue: String
+    public struct Checkin: Equatable, Sendable {
+        public var id: String
+        public var date: Date
+        public var venue: String
+
+        public var record: ImportedRecord {
+            ImportedRecord(sourceID: SourceID.swarm(id), kind: .checkin, start: date, text: "\(venue)着")
+        }
     }
 
-    var token: String
+    public enum APIError: LocalizedError {
+        case http(Int)
 
-    static var saved: SwarmClient? {
-        Keychain.get(tokenAccount).map { SwarmClient(token: $0) }
+        public var errorDescription: String? {
+            switch self {
+            case let .http(code): "Swarm に接続できませんでした（\(code)）"
+            }
+        }
     }
+
+    public var token: String
+
+    public init(token: String) {
+        self.token = token
+    }
+
+    // MARK: - ログイン
 
     /// ブラウザで開く認可URL（token フロー。リダイレクト先の #access_token= を受け取る）
-    static func authorizeURL(clientID: String) -> URL? {
+    public static func authorizeURL(clientID: String) -> URL? {
         var c = URLComponents(string: "https://foursquare.com/oauth2/authenticate")!
         c.queryItems = [
             .init(name: "client_id", value: clientID),
@@ -29,7 +47,7 @@ struct SwarmClient {
         return c.url
     }
 
-    static func token(fromCallback url: URL) -> String? {
+    public static func token(fromCallback url: URL) -> String? {
         guard let fragment = url.fragment else { return nil }
         for pair in fragment.split(separator: "&") {
             let kv = pair.split(separator: "=", maxSplits: 1)
@@ -38,7 +56,17 @@ struct SwarmClient {
         return nil
     }
 
-    func checkins(from: Date, to: Date) async throws -> [Checkin] {
+    // MARK: - チェックイン
+
+    public func checkins(from: Date, to: Date) async throws -> [Checkin] {
+        let (data, response) = try await URLSession.shared.data(from: checkinsURL(from: from, to: to))
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            throw APIError.http(http.statusCode)
+        }
+        return try Self.decodeCheckins(data)
+    }
+
+    func checkinsURL(from: Date, to: Date) -> URL {
         var c = URLComponents(string: "https://api.foursquare.com/v2/users/self/checkins")!
         c.queryItems = [
             .init(name: "oauth_token", value: token),
@@ -48,26 +76,16 @@ struct SwarmClient {
             .init(name: "afterTimestamp", value: String(Int(from.timeIntervalSince1970))),
             .init(name: "beforeTimestamp", value: String(Int(to.timeIntervalSince1970))),
         ]
-        let (data, response) = try await URLSession.shared.data(from: c.url!)
-        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
-            throw SwarmError.http(http.statusCode, String(data: data, encoding: .utf8) ?? "")
-        }
-        let decoded = try JSONDecoder().decode(Response.self, from: data)
-        return decoded.response.checkins.items.map {
+        return c.url!
+    }
+
+    static func decodeCheckins(_ data: Data) throws -> [Checkin] {
+        try JSONDecoder().decode(Response.self, from: data).response.checkins.items.map {
             Checkin(
                 id: $0.id,
                 date: Date(timeIntervalSince1970: TimeInterval($0.createdAt)),
                 venue: $0.venue?.name ?? "（場所不明）"
             )
-        }
-    }
-
-    enum SwarmError: LocalizedError {
-        case http(Int, String)
-        var errorDescription: String? {
-            switch self {
-            case let .http(code, _): "Swarm に接続できませんでした（\(code)）"
-            }
         }
     }
 

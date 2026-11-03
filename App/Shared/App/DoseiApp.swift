@@ -14,7 +14,7 @@ struct DoseiApp: App {
         WindowGroup {
             RootView()
         }
-        .modelContainer(SharedStore.container)
+        .modelContainer(Store.container)
         #if os(macOS)
         .defaultSize(width: 520, height: 720)
         #endif

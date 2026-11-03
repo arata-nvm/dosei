@@ -11,7 +11,7 @@ struct AddMemoIntent: AppIntent {
 
     @MainActor
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let context = SharedStore.container.mainContext
+        let context = Store.container.mainContext
         context.insert(Entry(start: .now, text: text))
         try context.save()
         return .result(dialog: "記録しました")

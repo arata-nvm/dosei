@@ -37,11 +37,27 @@ brew install xcodegen
 ## 構成
 
 ```
-Packages/DoseiCore    文体の組み立て・日付の区切り・睡眠の判定（プラットフォーム非依存、テストあり）
-App/Shared            SwiftUI（iPhone / Mac 共通）、SwiftData + CloudKit、Swarm
-App/iOS               HealthKit（iPhone のときだけビルド）
-App/Config            entitlements と Info.plist（iPhone / Mac 別）
+Packages/DoseiCore          プラットフォームに依存しない部分（swift test でテストできる）
+  DoseiFormatter.swift      首相動静の文体
+  DiaryDay.swift            日記の「1日」（午前4時区切り）
+  Sleep.swift               睡眠の区間から起床・就寝を求める
+  ImportedRecord.swift      取り込んだ記録の共通の形と sourceID の付け方
+  SwarmAPI.swift            Swarm の API（ログイン URL、チェックインの取得と読み取り）
+
+App/Shared                  iPhone / Mac 共通
+  App/                      エントリポイント、Siri・ショートカット
+  Model/                    Entry（SwiftData + CloudKit）、保存先、設定値
+  Import/                   取り込み（RecordSource → Importer が Entry に保存）、Swarm のトークン
+  Views/                    画面
+  Support/                  プラットフォームごとの小物（クリップボード、Mac のスワイプ）
+App/iOS                     iPhone のみ：ヘルスケアの読み取りとバックグラウンド配信
+App/Config                  entitlements と Info.plist（iPhone / Mac 別）
 ```
+
+### 取り込み元を増やすとき
+
+`RecordSource` に準拠した型を作り、その日の分を `ImportedRecord` で返す。`Importer.sources` に足せば、保存・重複の除去・手で直した行の保護は `Importer` が行う。
+`sourceID` は保存済みのデータと対応するので、一度決めた形式は変えない（`SourceID` とテストで固定してある）。
 
 首相動静の規則は `DoseiFormatter.swift` に書いてある。
 `swift test`（`Packages/DoseiCore` で実行）で、その規則どおりに文章が組み立てられることを確かめている。

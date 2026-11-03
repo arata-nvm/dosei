@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+/// 1行の編集。保存するまで Entry には書き込まない。
 struct EntryEditor: View {
     @Bindable var entry: Entry
     @Environment(\.dismiss) private var dismiss
@@ -21,7 +22,7 @@ struct EntryEditor: View {
                 if hasEnd {
                     DatePicker("終了", selection: $end, in: start...)
                 }
-                if entry.sourceID != nil {
+                if entry.isImported {
                     Toggle("隠す", isOn: $isHidden)
                 } else {
                     Button("削除", role: .destructive) {
