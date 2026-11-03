@@ -84,10 +84,18 @@ struct TodayView: View {
 
     private var inputBar: some View {
         HStack(spacing: 8) {
-            TextField("やったこと", text: $draft)
+            // 長い文は折り返して縦に広がる。改行は使わないので、return は記録の合図にする
+            TextField("やったこと", text: $draft, axis: .vertical)
+                .lineLimit(1...5)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit(add)
                 .submitLabel(.done)
+                .onChange(of: draft) { _, text in
+                    if text.contains(where: \.isNewline) {
+                        draft = text.filter { !$0.isNewline }
+                        add()
+                    }
+                }
             Button(action: add) {
                 Label("記録", systemImage: "arrow.up.circle.fill")
                     .labelStyle(.iconOnly)

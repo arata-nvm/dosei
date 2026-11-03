@@ -17,6 +17,12 @@ struct EntryEditor: View {
         NavigationStack {
             Form {
                 TextField("やったこと", text: $text, axis: .vertical)
+                    // 折り返しはするが、改行は入れない
+                    .onChange(of: text) { _, new in
+                        if new.contains(where: \.isNewline) {
+                            text = new.filter { !$0.isNewline }
+                        }
+                    }
                 DatePicker("時刻", selection: $start)
                 Toggle("終了時刻", isOn: $hasEnd)
                 if hasEnd {
