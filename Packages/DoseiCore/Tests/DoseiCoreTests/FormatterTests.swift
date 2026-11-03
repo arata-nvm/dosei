@@ -13,14 +13,14 @@ final class DoseiFormatterTests: XCTestCase {
     func testShushoDoseiRules() {
         let items: [TimelineItem] = [
             .init(start: t(8, 52), text: "自宅発"),
-            .init(start: t(8, 53), text: "研究室着"),
-            .init(start: t(8, 59), end: t(9, 4), text: "電車"),
-            .init(start: t(9, 5), end: t(9, 6), text: "乗り換え"),
+            .init(start: t(8, 53), text: "駅着"),  // 時が同じ → 同５３分
+            .init(start: t(8, 59), end: t(9, 4), text: "電車"),  // 「から」は時を省かない、「まで」は時が変われば書く
+            .init(start: t(9, 5), end: t(9, 6), text: "乗り換え"),  // 1分後に続く「から」は時を省く
             .init(start: t(9, 7), end: t(9, 8), text: "バス"),
             .init(start: t(9, 9), end: t(9, 15), text: "コンビニ"),
             .init(start: t(11, 30), end: t(11, 42), text: "打ち合わせ"),
             .init(start: t(11, 43), end: t(11, 48), text: "片付け"),
-            .init(start: t(13, 47), text: "研究室発"),
+            .init(start: t(13, 47), text: "大学発"),  // 午前 → 午後で書き直す
             .init(start: t(13, 55), text: "図書館着"),
             .init(start: t(14, 37), text: "図書館発"),
             .init(start: t(14, 47), text: "研究室着"),
@@ -29,17 +29,17 @@ final class DoseiFormatterTests: XCTestCase {
             .init(start: t(16, 27), text: "カフェ着"),
             .init(start: t(16, 41), text: "同所発"),
             .init(start: t(16, 42), text: "研究室着"),
-            .init(start: t(16, 52), end: t(17, 12), text: "ゼミ"),
+            .init(start: t(16, 52), end: t(17, 12), text: "ゼミ"),  // 時が同じでも「から」は時を書く
             .init(start: t(17, 17), end: t(17, 31), text: "雑談"),
             .init(start: t(18, 1), text: "研究室発"),
             .init(start: t(18, 2), text: "自宅着"),
         ]
         let expected =
             "\u{3000}"
-            + "午前８時５２分、自宅発。同５３分、研究室着。同８時５９分から同９時４分まで、電車。"
+            + "午前８時５２分、自宅発。同５３分、駅着。同８時５９分から同９時４分まで、電車。"
             + "同５分から同６分まで、乗り換え。同７分から同８分まで、バス。"
             + "同９分から同１５分まで、コンビニ。同１１時３０分から同４２分まで、打ち合わせ。"
-            + "同４３分から同４８分まで、片付け。午後１時４７分、研究室発。同５５分、図書館着。"
+            + "同４３分から同４８分まで、片付け。午後１時４７分、大学発。同５５分、図書館着。"
             + "同２時３７分、図書館発。同４７分、研究室着。同３時４９分から同５４分まで、電話。"
             + "同４時２５分、研究室発。同２７分、カフェ着。同４１分、同所発。同４２分、研究室着。"
             + "同４時５２分から同５時１２分まで、ゼミ。同５時１７分から同３１分まで、雑談。"
