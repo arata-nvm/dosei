@@ -20,6 +20,8 @@ struct DayEntriesList: View {
                 .onTapGesture { editing = entry }
                 .contextMenu { menu(for: entry) }
         }
+        // 一覧を下にスクロールするとキーボードが閉じる（メッセージと同じ）
+        .scrollDismissesKeyboard(.interactively)
     }
 
     /// 長押し（Mac は右クリック）のメニュー
