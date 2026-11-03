@@ -8,10 +8,6 @@ struct TodayView: View {
     /// 起動した日を基準に、何日前を見ているか（0 = 今日、-1 = 昨日）
     @State private var baseDay = AppSettings.today
     @State private var offset = 0
-    #if os(iOS)
-    /// 横スクロールで見えているページ（offset と同じ数え方）
-    @State private var visiblePage: Int? = 0
-    #endif
     @State private var draft = ""
     @State private var importing = false
     @State private var importErrors: [String] = []
@@ -59,26 +55,11 @@ struct TodayView: View {
     @ViewBuilder
     private var pages: some View {
         #if os(iOS)
-        // 横スクロールをページ単位で止める。LazyHStack は見えているページしか作らないので、
-        // 全日分を並べても重くならず、スクロール中に作り直しも起きない。
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal) {
-                LazyHStack(spacing: 0) {
-                    ForEach(-Self.maxDaysBack...0, id: \.self) { i in
-                        DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
-                            .containerRelativeFrame([.horizontal, .vertical])
-                    }
-                }
-                .scrollTargetLayout()
-            }
-            .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $visiblePage)
-            .scrollIndicators(.hidden)
-            // 今日（右端）から始める。.defaultScrollAnchor は縦の位置にも効いてしまうので使わない
-            .onAppear { proxy.scrollTo(0) }
-            .onChange(of: visiblePage) { _, page in
-                if let page { offset = page }
-            }
+        DayPager(offset: $offset, range: -Self.maxDaysBack...0) { i in
+            // ページは UIKit 側で作られ、SwiftUI の環境を引き継がないので、保存先と引っぱって更新を渡す
+            DayEntriesList(day: baseDay.adding(days: i), editing: $editing)
+                .modelContext(context)
+                .refreshable { await runImport() }
         }
         #else
         DayEntriesList(day: day, editing: $editing)
