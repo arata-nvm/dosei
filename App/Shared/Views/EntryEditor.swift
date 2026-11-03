@@ -30,7 +30,12 @@ struct EntryEditor: View {
                             text = new.filter { !$0.isNewline }
                         }
                     }
-                // 日付まで選べると、間違えて別の日（見えない明日など）に移ってしまうので時刻だけにする
+                // 日付と時刻は別の欄にする（一緒だと、時刻を直すつもりで日付まで動いてしまう）。
+                // 日付は今日までにして、見えない先の日には移せないようにする
+                DatePicker(
+                    "日付", selection: dayBinding,
+                    in: ...AppSettings.today.date(hour: 23, minute: 59, boundaryHour: AppSettings.boundaryHour),
+                    displayedComponents: .date)
                 DatePicker("時刻", selection: timeInDay($start), displayedComponents: .hourAndMinute)
                 Toggle("終了時刻", isOn: $hasEnd)
                 if hasEnd {
@@ -69,15 +74,30 @@ struct EntryEditor: View {
         #endif
     }
 
+    /// 日記の日。変えると、時刻はそのままで開始・終了をその日に移す
+    private var dayBinding: Binding<Date> {
+        Binding(
+            get: { day.date(hour: 12, minute: 0, boundaryHour: AppSettings.boundaryHour) },
+            set: { picked in
+                let c = DoseiFormatter.japaneseCalendar.dateComponents([.year, .month, .day], from: picked)
+                guard let y = c.year, let m = c.month, let d = c.day else { return }
+                day = DiaryDay(year: y, month: m, day: d)
+                start = moved(start)
+                end = moved(end)
+            })
+    }
+
+    /// 同じ「時:分」のまま、今の day に移す
+    private func moved(_ date: Date) -> Date {
+        let c = DoseiFormatter.japaneseCalendar.dateComponents([.hour, .minute], from: date)
+        return day.date(hour: c.hour ?? 0, minute: c.minute ?? 0, boundaryHour: AppSettings.boundaryHour)
+    }
+
     /// 選んだ「時:分」を、この記録の日記の日の中の日時にする
     private func timeInDay(_ date: Binding<Date>) -> Binding<Date> {
         Binding(
             get: { date.wrappedValue },
-            set: { picked in
-                let c = DoseiFormatter.japaneseCalendar.dateComponents([.hour, .minute], from: picked)
-                date.wrappedValue = day.date(
-                    hour: c.hour ?? 0, minute: c.minute ?? 0, boundaryHour: AppSettings.boundaryHour)
-            })
+            set: { date.wrappedValue = moved($0) })
     }
 
     private func save() {
