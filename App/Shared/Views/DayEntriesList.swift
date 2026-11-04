@@ -14,12 +14,18 @@ struct DayEntriesList: View {
     }
 
     var body: some View {
-        List(entries) { entry in
-            EntryRow(entry: entry)
-                .contentShape(Rectangle())
-                .onTapGesture { editing = entry }
-                .contextMenu { menu(for: entry) }
+        List {
+            ForEach(Array(entries.enumerated()), id: \.element.persistentModelID) { index, entry in
+                EntryRow(entry: entry, isFirst: index == 0, isLast: index == entries.count - 1)
+                    .contentShape(Rectangle())
+                    .onTapGesture { editing = entry }
+                    .contextMenu { menu(for: entry) }
+                    // 縦の線を行の間で途切れさせないため、上下の余白は行の中で取る
+                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                    .listRowSeparator(.hidden)
+            }
         }
+        .listStyle(.plain)
         // 一覧を下にスクロールするとキーボードが閉じる（メッセージと同じ）
         .scrollDismissesKeyboard(.interactively)
     }
@@ -42,45 +48,63 @@ struct DayEntriesList: View {
     }
 }
 
+/// 1行。左に縦の線とアイコン、右に「時刻（小さく）」「内容（幅いっぱい）」の2段。
 struct EntryRow: View {
     let entry: Entry
+    var isFirst = false
+    var isLast = false
 
-    /// アイコンの欄の幅（文字の大きさの設定に合わせて変わる）
-    @ScaledMetric(relativeTo: .body) private var iconWidth = 24
+    /// 線とアイコンの欄の幅（文字の大きさの設定に合わせて変わる）
+    @ScaledMetric(relativeTo: .body) private var railWidth = 28
+    /// 行の上下の余白
+    @ScaledMetric(relativeTo: .body) private var padding = 10
 
     private static let timeFormat = Date.FormatStyle(date: .omitted, time: .shortened)
         .locale(Locale(identifier: "ja_JP"))
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            time
-            Image(systemName: entry.kind.symbol)
-                .foregroundStyle(.tint)
-                .frame(width: iconWidth)
-            Text(entry.text)
-                .strikethrough(entry.isHidden)
-                .foregroundStyle(entry.isHidden ? .secondary : .primary)
-                .multilineTextAlignment(.leading)
+        HStack(alignment: .top, spacing: 10) {
+            // 線は下の overlay で行の高さいっぱいに描く。ここは幅を取るだけ
+            Color.clear.frame(width: railWidth)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(timeText)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                Text(entry.text)
+                    .strikethrough(entry.isHidden)
+                    .foregroundStyle(entry.isHidden ? .secondary : .primary)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(.vertical, padding)
         }
-        // Mac の一覧では中央にそろうので、左にそろえる
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(alignment: .leading) { rail }
     }
 
-    /// 時刻の欄。見えない「00:00」と重ねて、どの行も同じ幅にそろえる（文字の大きさを変えても崩れない）。
-    /// 終了時刻は開始時刻の下に小さく出す。
-    private var time: some View {
-        ZStack(alignment: .topTrailing) {
-            Text("00:00").hidden()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(entry.start.formatted(Self.timeFormat))
-                if let end = entry.end {
-                    Text("–" + end.formatted(Self.timeFormat))
-                        .font(.caption.monospacedDigit())
-                }
-            }
+    /// 縦の線とアイコン。最初の行は上、最後の行は下の線を消す
+    private var rail: some View {
+        VStack(spacing: 0) {
+            line.frame(height: padding - 4).opacity(isFirst ? 0 : 1)
+            Image(systemName: entry.kind.symbol)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(entry.isHidden ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tint))
+                .frame(width: railWidth, height: railWidth)
+                .background(Circle().fill(.background.secondary))
+            line.opacity(isLast ? 0 : 1)
         }
-        .font(.callout.monospacedDigit())
-        .foregroundStyle(.secondary)
+        .frame(width: railWidth)
+    }
+
+    private var line: some View {
+        Rectangle()
+            .fill(.secondary.opacity(0.4))
+            .frame(width: 2)
+    }
+
+    private var timeText: String {
+        let start = entry.start.formatted(Self.timeFormat)
+        guard let end = entry.end else { return start }
+        return "\(start)–\(end.formatted(Self.timeFormat))"
     }
 }
 
