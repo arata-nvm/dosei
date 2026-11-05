@@ -28,7 +28,7 @@ targets:
     scheme: {}   # CI の xcodebuild -scheme Dosei 用
     settings:
       base:
-        DEVELOPMENT_TEAM: "Q656Y94SNT"
+        DEVELOPMENT_TEAM: "NJ69566W75"
         BUNDLE_ID: "dev.arata-nvm.dosei"
         PRODUCT_BUNDLE_IDENTIFIER: "$(BUNDLE_ID)"
         PRODUCT_NAME: "Dosei"
