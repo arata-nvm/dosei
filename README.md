@@ -43,6 +43,13 @@ brew install xcodegen
 
 更新用のトークンは iCloud キーチェーンに保存され、Mac とも共有される。
 
+## TestFlight で配る（Xcode Cloud）
+
+`main` に push すると、Xcode Cloud が iPhone 版と Mac 版をビルドして TestFlight に上げる。
+`.xcodeproj` は Git に入れていないので、`ci_scripts/ci_post_clone.sh` で XcodeGen を実行してから作る。
+
+TestFlight の版は CloudKit の**本番**の環境を使う（Xcode から入れた版は開発用で、データは別）。
+
 ## 構成
 
 ```
