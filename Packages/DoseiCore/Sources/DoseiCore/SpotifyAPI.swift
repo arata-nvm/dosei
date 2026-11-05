@@ -125,25 +125,29 @@ public enum SpotifyAPI {
         }
     }
 
-    /// from 〜 to の間に追加した曲。新しい順に返ってくるので、from より古くなったら止める
-    public static func savedTracks(from: Date, to: Date, accessToken: String) async throws -> [SavedTrack] {
-        var result: [SavedTrack] = []
-        var next: URL? = URL(string: "https://api.spotify.com/v1/me/tracks?limit=50")
-        while let url = next {
-            var request = URLRequest(url: url)
-            request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-            let (data, response) = try await URLSession.shared.data(for: request)
-            try check(response)
-            let page = try decodeSavedTracks(data)
-            result += page.tracks.filter { $0.addedAt >= from && $0.addedAt < to }
-            // 新しい順なので、ページの最後が from より古ければ、その先は全部古い
-            guard let oldest = page.tracks.last?.addedAt, oldest >= from else { break }
-            next = page.next
-        }
-        return result
+    /// お気に入りの曲の最初のページ（新しい順に50曲）
+    public static let savedTracksFirstPage = URL(string: "https://api.spotify.com/v1/me/tracks?limit=50")!
+
+    /// お気に入りの曲を1ページ取る。続きのページの URL も返る
+    public static func savedTracksPage(_ url: URL, accessToken: String) async throws -> SavedTracksPage {
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        try check(response)
+        return try decodeSavedTracks(data)
     }
 
-    static func decodeSavedTracks(_ data: Data) throws -> (tracks: [SavedTrack], next: URL?) {
+    public struct SavedTracksPage: Sendable {
+        public var tracks: [SavedTrack]
+        public var next: URL?
+
+        public init(tracks: [SavedTrack], next: URL?) {
+            self.tracks = tracks
+            self.next = next
+        }
+    }
+
+    static func decodeSavedTracks(_ data: Data) throws -> SavedTracksPage {
         struct Response: Decodable {
             struct Item: Decodable {
                 struct Track: Decodable {
@@ -166,7 +170,7 @@ public enum SpotifyAPI {
             guard let id = item.track.id, let date = iso.date(from: item.addedAt) else { return nil }
             return SavedTrack(id: id, name: item.track.name, artists: item.track.artists.map(\.name), addedAt: date)
         }
-        return (tracks, r.next.flatMap(URL.init(string:)))
+        return SavedTracksPage(tracks: tracks, next: r.next.flatMap(URL.init(string:)))
     }
 
     // MARK: -

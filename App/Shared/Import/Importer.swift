@@ -29,10 +29,24 @@ enum Importer {
         return sources
     }
 
+    /// 自動で取り込んだ日と時刻。同じ日を何度開いても、そのたびに外部のサービスへ問い合わせないため
+    private static var lastAutoImport: [DiaryDay: Date] = [:]
+    private static let autoImportInterval: TimeInterval = 5 * 60
+
     /// 使える取り込み元すべてから取り込む
+    /// - Parameter force: false（日付を開いたときの自動の取り込み）なら、同じ日を5分以内には取り込み直さない。
+    ///   引っぱったときやボタンを押したときは true。
     @discardableResult
-    static func importDay(_ day: DiaryDay, into context: ModelContext) async -> [String] {
-        await importDay(day, from: sources, into: context)
+    static func importDay(_ day: DiaryDay, into context: ModelContext, force: Bool) async -> [String] {
+        if !force, let last = lastAutoImport[day], Date().timeIntervalSince(last) < autoImportInterval {
+            return []
+        }
+        let errors = await importDay(day, from: sources, into: context)
+        // 途中で止められたときは、次に開いたときにもう一度取り込む
+        if !Task.isCancelled && errors.isEmpty {
+            lastAutoImport[day] = Date()
+        }
+        return errors
     }
 
     /// - Returns: 表示するエラーメッセージ。キャンセルされただけのものは含めない。

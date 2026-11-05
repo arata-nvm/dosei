@@ -47,7 +47,7 @@ struct TodayView: View {
             // スワイプで日付を次々に変えている間は取り込まない
             try? await Task.sleep(for: .milliseconds(400))
             guard !Task.isCancelled else { return }
-            await runImport()
+            await runImport(force: false)
         }
         .refreshable { await runImport() }
     }
@@ -123,9 +123,9 @@ struct TodayView: View {
         if !isToday { editing = entry }
     }
 
-    private func runImport() async {
+    private func runImport(force: Bool = true) async {
         importing = true
-        let errors = await Importer.importDay(day, into: context)
+        let errors = await Importer.importDay(day, into: context, force: force)
         importing = false
         guard !Task.isCancelled else { return }
         importErrors = errors

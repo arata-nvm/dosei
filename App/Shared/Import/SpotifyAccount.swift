@@ -11,6 +11,13 @@ enum SpotifyAccount {
     private static let keychainAccount = "spotify-refresh-token"
     /// アクセストークンはこの端末のメモリにだけ持つ
     private static var cached: SpotifyAPI.Token?
+    /// 更新中のトークン（同時に呼ばれても、更新は1回だけ送る）
+    private static var refreshing: Task<SpotifyAPI.Token, Error>?
+
+    /// 取ったお気に入りの曲を5分間覚えておく（昔の日を開くたびに全部取り直さないため）
+    nonisolated static let library = SpotifyLibrary { url in
+        try await SpotifyAPI.savedTracksPage(url, accessToken: try await SpotifyAccount.accessToken())
+    }
 
     static var isLoggedIn: Bool { Keychain.get(keychainAccount) != nil }
 
@@ -21,15 +28,24 @@ enum SpotifyAccount {
     static func logout() {
         Keychain.set(nil, for: keychainAccount)
         cached = nil
+        Task { await library.reset() }
     }
 
     /// 使えるアクセストークン（切れていれば取り直す）
     static func accessToken() async throws -> String {
         if let cached, cached.isValid() { return cached.accessToken }
+        if let refreshing { return try await refreshing.value.accessToken }
         guard let refreshToken = Keychain.get(keychainAccount) else { throw AccountError.notLoggedIn }
-        let token = try await SpotifyAPI.refresh(refreshToken: refreshToken, clientID: clientID)
-        save(token)
-        return token.accessToken
+        let clientID = clientID
+        let task = Task {
+            // 待っている側が戻る前に結果を保存し、印を消す
+            defer { refreshing = nil }
+            let token = try await SpotifyAPI.refresh(refreshToken: refreshToken, clientID: clientID)
+            save(token)
+            return token
+        }
+        refreshing = task
+        return try await task.value.accessToken
     }
 
     private static func save(_ token: SpotifyAPI.Token) {
@@ -96,8 +112,6 @@ struct SpotifySource: RecordSource {
     var name: String { "Spotify" }
 
     func records(for day: DiaryDay) async throws -> [ImportedRecord] {
-        let token = try await SpotifyAccount.accessToken()
-        return try await SpotifyAPI.savedTracks(from: day.startDate, to: day.endDate, accessToken: token)
-            .map(\.record)
+        try await SpotifyAccount.library.tracks(from: day.startDate, to: day.endDate).map(\.record)
     }
 }
