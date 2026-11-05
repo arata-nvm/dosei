@@ -23,10 +23,9 @@
 brew install xcodegen
 ```
 
-1. `project.yml` の `DEVELOPMENT_TEAM` を自分の Team ID に変える
-2. `xcodegen` を実行して `Dosei.xcodeproj` を開く
-3. iCloud コンテナ `iCloud.dev.arata-nvm.dosei` は初回ビルド時に Xcode が作る（Signing & Capabilities で確認）
-4. ターゲット `Dosei` の実行先を iPhone か My Mac にして実行
+1. `xcodegen` を実行して `Dosei.xcodeproj` を開く
+2. iCloud コンテナ `iCloud.dev.arata-nvm.dosei` は初回ビルド時に Xcode が作る（Signing & Capabilities で確認）
+3. ターゲット `Dosei` の実行先を iPhone か My Mac にして実行
 
 ### Swarm
 
