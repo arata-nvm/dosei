@@ -6,6 +6,9 @@ struct SettingsView: View {
     @AppStorage(AppSettings.Key.nikkyID) private var nikkyID = ""
     @AppStorage(AppSettings.Key.boundaryHour) private var boundaryHour = AppSettings.defaultBoundaryHour
     @AppStorage(AppSettings.Key.swarmClientID) private var clientID = ""
+    @AppStorage(AppSettings.Key.spotifyClientID) private var spotifyClientID = ""
+    @State private var spotifyLoggedIn = SpotifyAccount.isLoggedIn
+    @State private var spotifyError: String?
     @Environment(\.webAuthenticationSession) private var webAuth
     @Environment(\.dismiss) private var dismiss
 
@@ -45,6 +48,23 @@ struct SettingsView: View {
                     Text(authError).foregroundStyle(.red)
                 }
             }
+
+            Section("Spotify") {
+                if spotifyLoggedIn {
+                    Label("ログイン済み", systemImage: "checkmark.circle")
+                    Button("ログアウト", role: .destructive) {
+                        SpotifyAccount.logout()
+                        spotifyLoggedIn = false
+                    }
+                } else {
+                    TextField("Client ID", text: $spotifyClientID)
+                    Button("ログイン") { Task { await loginSpotify() } }
+                        .disabled(spotifyClientID.isEmpty)
+                }
+                if let spotifyError {
+                    Text(spotifyError).foregroundStyle(.red)
+                }
+            }
         }
         .formStyle(.grouped)
         .navigationTitle("設定")
@@ -68,6 +88,18 @@ struct SettingsView: View {
         SwarmAccount.token = t
         tokenDraft = ""
         isLoggedIn = true
+    }
+
+    private func loginSpotify() async {
+        guard let request = SpotifyAccount.makeLoginRequest() else { return }
+        do {
+            let callback = try await webAuth.authenticate(using: request.url, callbackURLScheme: "dosei")
+            try await SpotifyAccount.finish(request, callback: callback)
+            spotifyLoggedIn = true
+            spotifyError = nil
+        } catch {
+            spotifyError = error.localizedDescription
+        }
     }
 
     private func login() async {

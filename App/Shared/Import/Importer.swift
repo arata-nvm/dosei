@@ -23,6 +23,9 @@ enum Importer {
         if let swarm = SwarmAccount.api {
             sources.append(swarm)
         }
+        if SpotifyAccount.isLoggedIn {
+            sources.append(SpotifySource())
+        }
         return sources
     }
 

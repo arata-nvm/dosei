@@ -9,6 +9,7 @@ enum SettingsSync {
         AppSettings.Key.nikkyID,
         AppSettings.Key.boundaryHour,
         AppSettings.Key.swarmClientID,
+        AppSettings.Key.spotifyClientID,
     ]
 
     private static var observers: [NSObjectProtocol] = []

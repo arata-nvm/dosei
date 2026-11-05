@@ -116,6 +116,7 @@ extension RecordKind {
         case .sleep: "moon.zzz"
         case .workout: "figure.outdoor.cycle"
         case .checkin: "mappin.and.ellipse"
+        case .music: "music.note"
         }
     }
 }

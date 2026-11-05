@@ -63,7 +63,7 @@ extension Entry {
     }
 
     var timelineItem: TimelineItem {
-        TimelineItem(start: start, end: end, text: text)
+        TimelineItem(start: start, end: end, text: text, link: SourceID.link(for: sourceID))
     }
 
     /// その日の記録

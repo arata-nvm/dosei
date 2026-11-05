@@ -6,6 +6,7 @@
 
 - **時刻は自動**：入力欄に「やったこと」だけ書くと、その時刻で記録される
 - **Swarm**：チェックインが場所の名前で自動で入る（着いたとき・途中・出るときのどれでもチェックインするので「着」は付けない。一言は入れない）
+- **Spotify**：お気に入りの曲（Liked Songs）に追加した曲が「YOASOBI『夜に駆ける』」の形で入る。Nikky に投稿する文では、本文の下に曲の URL を段落を分けて並べる（Nikky で「埋め込み」を押すとプレーヤーになる）
 - **Apple Watch**：起床・就寝（睡眠記録）とワークアウト（自転車・徒歩など）が自動で入る。iPhone でヘルスケアに記録が増えると、アプリを開いていなくても裏で取り込まれる（バックグラウンド配信）
 - **同期**：iCloud で iPhone と Mac が同期。サーバーなし（記録は CloudKit、Swarm のトークンは iCloud キーチェーン、Nikky の ID・日付の区切り・Swarm の Client ID は iCloud のキー値ストア）
 - **Siri / ショートカット / アクションボタン**：「動静に記録」でアプリを開かずに記録
@@ -34,6 +35,14 @@ brew install xcodegen
 3. アプリの設定に Client ID を入れて「Swarm でログイン」
    （うまくいかなければ、取得したアクセストークンを直接貼る）
 
+### Spotify
+
+1. https://developer.spotify.com/dashboard でアプリを作る（Web API にチェック）
+2. Redirect URI に `dosei://spotify` を登録
+3. アプリの設定に Client ID を入れて「ログイン」（Client Secret は使わない。PKCE でログインする）
+
+更新用のトークンは iCloud キーチェーンに保存され、Mac とも共有される。
+
 ## 構成
 
 ```
@@ -43,6 +52,7 @@ Packages/DoseiCore          プラットフォームに依存しない部分（s
   Sleep.swift               睡眠の区間から起床・就寝を求める
   ImportedRecord.swift      取り込んだ記録の共通の形と sourceID の付け方
   SwarmAPI.swift            Swarm の API（ログイン URL、チェックインの取得と読み取り）
+  SpotifyAPI.swift          Spotify の API（PKCE のログイン、トークンの更新、お気に入りの曲の取得）
 
 App/Shared                  iPhone / Mac 共通
   App/                      エントリポイント、Siri・ショートカット

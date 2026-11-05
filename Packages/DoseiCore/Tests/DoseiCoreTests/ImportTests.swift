@@ -54,7 +54,7 @@ final class ImportTests: XCTestCase {
         XCTAssertEqual(SourceID.bed(day), "hk-bed-2026-11-03")
         let uuid = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
         XCTAssertEqual(SourceID.workout(uuid), "hk-workout-00000000-0000-0000-0000-000000000001")
-        XCTAssertEqual(RecordKind.allCases.map(\.rawValue), ["memo", "wake", "sleep", "workout", "checkin"])
+        XCTAssertEqual(RecordKind.allCases.map(\.rawValue), ["memo", "wake", "sleep", "workout", "checkin", "music"])
     }
 
     func testSleepRecords() {

@@ -7,6 +7,7 @@ enum AppSettings {
         static let nikkyID = "nikkyID"
         static let boundaryHour = "boundaryHour"
         static let swarmClientID = "swarmClientID"
+        static let spotifyClientID = "spotifyClientID"
     }
 
     static let defaultBoundaryHour = 4

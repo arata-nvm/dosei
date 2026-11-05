@@ -5,11 +5,14 @@ public struct TimelineItem: Equatable, Sendable {
     public var start: Date
     public var end: Date?
     public var text: String
+    /// 本文の下に段落を分けて並べるリンク（Spotify の曲など。Nikky で埋め込みにできる）
+    public var link: String?
 
-    public init(start: Date, end: Date? = nil, text: String) {
+    public init(start: Date, end: Date? = nil, text: String, link: String? = nil) {
         self.start = start
         self.end = end
         self.text = text
+        self.link = link
     }
 }
 
@@ -59,7 +62,10 @@ public struct DoseiFormatter: Sendable {
             }
         }
 
-        return "\u{3000}" + sentences.joined()
+        let body = "\u{3000}" + sentences.joined()
+        // リンクは本文に出てくる順に、1つずつ段落を分けて並べる（Nikky では段落が URL だけだと埋め込みにできる）
+        let links = sorted.compactMap(\.link)
+        return ([body] + links).joined(separator: "\n\n")
     }
 
     // MARK: - 時刻表現
