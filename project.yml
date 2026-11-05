@@ -55,6 +55,8 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_NSHealthShareUsageDescription: "Apple Watch の睡眠とワークアウトから、起床・就寝・移動の時刻を日記に入れるために使います。"
+        # 書き込みはしないが、HealthKit の entitlements があると説明文が必須（ITMS-90683）
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: "動静はヘルスケアにデータを書き込みません。睡眠とワークアウトを読み取るだけです。"
 
         # Mac
         "CODE_SIGN_ENTITLEMENTS[sdk=macosx*]": App/Config/macOS.entitlements
