@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       name:
-        description: タグの名前（空なら日本時間の日時から自動で付ける。例 v2026.11.05-1430）
+        description: タグの名前（空なら日本時間の日時から自動で付ける。例 v2026-11-05-14-30-10）
         required: false
         default: ""
 
@@ -37,14 +37,8 @@ jobs:
           if [ -n "$INPUT_NAME" ]; then
             name="$INPUT_NAME"
           else
-            base="v$(TZ=Asia/Tokyo date +%Y.%m.%d-%H%M)"
-            name="$base"
-            n=2
-            # 同じ分に2回実行したときだけ -2 を足す
-            while git rev-parse -q --verify "refs/tags/$name" >/dev/null; do
-              name="$base-$n"
-              n=$((n + 1))
-            done
+            # 日本時間の日時（秒まで）。同じ秒に2回実行されることはまずないので、重なったら下でエラーにする
+            name="v$(TZ=Asia/Tokyo date +%Y-%m-%d-%H-%M-%S)"
           fi
           # 入力をそのままシェルやタグに使わない
           if ! printf '%s' "$name" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$'; then
