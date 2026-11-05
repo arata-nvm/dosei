@@ -1,0 +1,73 @@
+name: Release tag
+
+# Actions の画面の「Run workflow」から実行すると、main の最新のコミットにタグを付けて push する。
+# Xcode Cloud はタグを見てビルドし、TestFlight に上げる。
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: タグの名前（空なら日本時間の日時から自動で付ける。例 v2026.11.05-1430）
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+# 同時に実行して同じ名前を取り合わないように
+concurrency:
+  group: release-tag
+
+jobs:
+  tag:
+    name: Tag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0 # 既存のタグを見るため
+
+      - name: Decide tag name
+        id: tag
+        env:
+          INPUT_NAME: ${{ inputs.name }}
+        run: |
+          set -eu
+          if [ -n "$INPUT_NAME" ]; then
+            name="$INPUT_NAME"
+          else
+            base="v$(TZ=Asia/Tokyo date +%Y.%m.%d-%H%M)"
+            name="$base"
+            n=2
+            # 同じ分に2回実行したときだけ -2 を足す
+            while git rev-parse -q --verify "refs/tags/$name" >/dev/null; do
+              name="$base-$n"
+              n=$((n + 1))
+            done
+          fi
+          # 入力をそのままシェルやタグに使わない
+          if ! printf '%s' "$name" | grep -Eq '^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$'; then
+            echo "::error::タグの名前に使えない文字があります: $name"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$name" >/dev/null; then
+            echo "::error::タグ $name はもうあります"
+            exit 1
+          fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag
+        env:
+          NAME: ${{ steps.tag.outputs.name }}
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NAME" -m "Release $NAME"
+          git push origin "refs/tags/$NAME"
+          {
+            echo "### タグ \`$NAME\` を付けました"
+            echo ""
+            echo "コミット: \`$(git rev-parse --short HEAD)\` $(git log -1 --format=%s)"
+          } >> "$GITHUB_STEP_SUMMARY"
