@@ -39,6 +39,8 @@ targets:
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: "動静"
+        # 使う暗号は HTTPS だけなので輸出規制の申告は不要（TestFlight に上げるたびに聞かれないように）
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 
         # 「My Mac (Designed for iPad)」や Catalyst の実行先を出さない
