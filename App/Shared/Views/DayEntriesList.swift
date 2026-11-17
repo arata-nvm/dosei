@@ -20,13 +20,14 @@ struct DayEntriesList: View {
             ForEach(Array(entries.enumerated()), id: \.element.persistentModelID) { index, entry in
                 EntryRow(
                     entry: entry, day: day, isFirst: index == 0, isLast: index == entries.count - 1,
-                    startsNewDate: startsNewDate(at: index))
-                    .contentShape(Rectangle())
-                    .onTapGesture { editing = entry }
-                    .contextMenu { menu(for: entry) }
-                    // 縦の線を行の間で途切れさせないため、上下の余白は行の中で取る
-                    .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-                    .listRowSeparator(.hidden)
+                    startsNewDate: startsNewDate(at: index)
+                )
+                .contentShape(Rectangle())
+                .onTapGesture { editing = entry }
+                .contextMenu { menu(for: entry) }
+                // 縦の線を行の間で途切れさせないため、上下の余白は行の中で取る
+                .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+                .listRowSeparator(.hidden)
             }
         }
         .listStyle(.plain)
