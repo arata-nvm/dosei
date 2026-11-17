@@ -35,7 +35,7 @@ struct TodayView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .toolbar { toolbar }
-        .sheet(item: $editing) { EntryEditor(entry: $0) }
+        .sheet(item: $editing) { entry in EntryEditor(entry: entry, onSave: { show($0) }) }
         #if os(iOS)
         .sheet(isPresented: $showSettings) { NavigationStack { SettingsView() } }
         #endif
@@ -86,6 +86,15 @@ struct TodayView: View {
                 }
             }
         #endif
+    }
+
+    /// 記録が入っている日記の日のページに移る（編集で別の日に動かしたとき）
+    private func show(_ entry: Entry) {
+        let target = DiaryDay(containing: entry.start, boundaryHour: AppSettings.boundaryHour)
+        let newOffset = baseDay.days(to: target)
+        if (-Self.maxDaysBack...Self.maxDaysAhead).contains(newOffset) {
+            offset = newOffset
+        }
     }
 
     private func goBack() {

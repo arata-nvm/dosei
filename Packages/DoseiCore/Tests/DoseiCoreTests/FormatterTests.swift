@@ -143,4 +143,13 @@ final class DoseiFormatterTests: XCTestCase {
         XCTAssertEqual(
             DiaryDay(containing: day.end(calendar: cal).addingTimeInterval(-1), calendar: cal), day)
     }
+
+    func testCalendarDayAndDistance() {
+        // 午前2時は日記では前の日だが、暦の上ではその日
+        XCTAssertEqual(DiaryDay(calendarDayOf: t(2, 0, day: 3)), DiaryDay(year: 2026, month: 11, day: 3))
+        let day = DiaryDay(year: 2026, month: 11, day: 30)
+        XCTAssertEqual(day.days(to: DiaryDay(year: 2026, month: 12, day: 2)), 2)
+        XCTAssertEqual(day.days(to: DiaryDay(year: 2026, month: 11, day: 3)), -27)
+        XCTAssertEqual(day.days(to: day), 0)
+    }
 }

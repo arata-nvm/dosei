@@ -7,8 +7,10 @@ struct DayEntriesList: View {
     @Environment(\.modelContext) private var context
     @Query private var entries: [Entry]
     @Binding var editing: Entry?
+    let day: DiaryDay
 
     init(day: DiaryDay, editing: Binding<Entry?>) {
+        self.day = day
         _entries = Query(filter: Entry.on(day), sort: \Entry.start)
         _editing = editing
     }
@@ -16,7 +18,9 @@ struct DayEntriesList: View {
     var body: some View {
         List {
             ForEach(Array(entries.enumerated()), id: \.element.persistentModelID) { index, entry in
-                EntryRow(entry: entry, isFirst: index == 0, isLast: index == entries.count - 1)
+                EntryRow(
+                    entry: entry, day: day, isFirst: index == 0, isLast: index == entries.count - 1,
+                    startsNewDate: startsNewDate(at: index))
                     .contentShape(Rectangle())
                     .onTapGesture { editing = entry }
                     .contextMenu { menu(for: entry) }
@@ -28,6 +32,13 @@ struct DayEntriesList: View {
         .listStyle(.plain)
         // 一覧を下にスクロールするとキーボードが閉じる（メッセージと同じ）
         .scrollDismissesKeyboard(.interactively)
+    }
+
+    /// この行から暦の上の日付が変わる（午前0時を過ぎた最初の記録）
+    private func startsNewDate(at index: Int) -> Bool {
+        let date = DiaryDay(calendarDayOf: entries[index].start)
+        let previous = index == 0 ? day : DiaryDay(calendarDayOf: entries[index - 1].start)
+        return date != previous
     }
 
     /// 長押し（Mac は右クリック）のメニュー
@@ -51,8 +62,12 @@ struct DayEntriesList: View {
 /// 1行。左に縦の線とアイコン、右に「時刻（小さく）」「内容（幅いっぱい）」の2段。
 struct EntryRow: View {
     let entry: Entry
+    /// この行が載っている日記の日。暦の上の日付がこれと違う時刻には日付を付ける
+    let day: DiaryDay
     var isFirst = false
     var isLast = false
+    /// 午前0時を過ぎた最初の記録なら、上に日付の区切り線を出す
+    var startsNewDate = false
 
     /// 線とアイコンの欄の幅（文字の大きさの設定に合わせて変わる）
     @ScaledMetric(relativeTo: .body) private var railWidth = 28
@@ -67,6 +82,9 @@ struct EntryRow: View {
             // 線は下の overlay で行の高さいっぱいに描く。ここは幅を取るだけ
             Color.clear.frame(width: railWidth)
             VStack(alignment: .leading, spacing: 2) {
+                if startsNewDate {
+                    dateDivider
+                }
                 Text(timeText)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -101,10 +119,29 @@ struct EntryRow: View {
             .frame(width: 2)
     }
 
+    private var dateDivider: some View {
+        HStack(spacing: 6) {
+            Text(DiaryDay(calendarDayOf: entry.start).title())
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Rectangle()
+                .fill(.secondary.opacity(0.4))
+                .frame(height: 1)
+        }
+        .padding(.bottom, 4)
+    }
+
     private var timeText: String {
-        let start = entry.start.formatted(Self.timeFormat)
+        let start = time(entry.start)
         guard let end = entry.end else { return start }
-        return "\(start)–\(end.formatted(Self.timeFormat))"
+        return "\(start)–\(time(end))"
+    }
+
+    /// 「3:00」。日記の日と暦の上の日付が違えば「28日 3:00」
+    private func time(_ date: Date) -> String {
+        let t = date.formatted(Self.timeFormat)
+        let d = DiaryDay(calendarDayOf: date)
+        return d == day ? t : "\(d.day)日 \(t)"
     }
 }
 

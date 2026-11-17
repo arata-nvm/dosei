@@ -21,6 +21,12 @@ public struct DiaryDay: Hashable, Sendable {
         self = c.hour! < boundaryHour ? day.adding(days: -1, calendar: calendar) : day
     }
 
+    /// date の暦の上の日付（区切りは関係なく、午前0時で変わる）
+    public init(calendarDayOf date: Date, calendar: Calendar = DoseiFormatter.diaryCalendar) {
+        let c = calendar.dateComponents([.year, .month, .day], from: date)
+        self.init(year: c.year!, month: c.month!, day: c.day!)
+    }
+
     public func start(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.diaryCalendar) -> Date {
         calendar.date(from: DateComponents(year: year, month: month, day: day, hour: boundaryHour))!
     }
@@ -34,6 +40,13 @@ public struct DiaryDay: Hashable, Sendable {
         let moved = calendar.date(byAdding: .day, value: days, to: noon)!
         let c = calendar.dateComponents([.year, .month, .day], from: moved)
         return DiaryDay(year: c.year!, month: c.month!, day: c.day!)
+    }
+
+    /// other まで何日あるか（other が先なら正、前なら負）
+    public func days(to other: DiaryDay, calendar: Calendar = DoseiFormatter.diaryCalendar) -> Int {
+        let from = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
+        let to = calendar.date(from: DateComponents(year: other.year, month: other.month, day: other.day, hour: 12))!
+        return calendar.dateComponents([.day], from: from, to: to).day!
     }
 
     /// その日の日記の中での「時:分」の日時。区切りより前の時刻（深夜）は、暦の上では翌日になる。
