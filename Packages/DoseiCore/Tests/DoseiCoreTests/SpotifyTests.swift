@@ -36,7 +36,7 @@ final class SpotifyTests: XCTestCase {
 
     /// 曲のリンクは本文の下に、本文に出てくる順で段落を分けて並べる
     func testLinksAfterBody() {
-        let cal = DoseiFormatter.japaneseCalendar
+        let cal = DoseiFormatter.diaryCalendar
         let t = { (h: Int, m: Int) in cal.date(from: DateComponents(year: 2026, month: 11, day: 3, hour: h, minute: m))!
         }
         let items: [TimelineItem] = [

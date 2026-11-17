@@ -29,13 +29,15 @@ public struct TimelineItem: Equatable, Sendable {
 public struct DoseiFormatter: Sendable {
     public var calendar: Calendar
 
-    public init(calendar: Calendar = DoseiFormatter.japaneseCalendar) {
+    public init(calendar: Calendar = DoseiFormatter.diaryCalendar) {
         self.calendar = calendar
     }
 
-    public static var japaneseCalendar: Calendar {
+    /// 日付と時刻の計算に使う暦。端末のタイムゾーンに合わせる（海外にいるときはその土地の時刻で書く）。
+    /// 毎回作り直すので、旅行中にタイムゾーンが変わっても追いつく。
+    public static var diaryCalendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+        cal.timeZone = .current
         cal.locale = Locale(identifier: "ja_JP")
         return cal
     }

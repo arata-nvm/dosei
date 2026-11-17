@@ -29,6 +29,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: swift test
         working-directory: Packages/DoseiCore
+        # テストは日本時間の日時で書いてある（暦は端末のタイムゾーンを使う）
+        env:
+          TZ: Asia/Tokyo
         run: swift test
 
   build:

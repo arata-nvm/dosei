@@ -75,7 +75,7 @@ struct EntryEditor: View {
         Binding(
             get: { day.date(hour: 12, minute: 0, boundaryHour: AppSettings.boundaryHour) },
             set: { picked in
-                let c = DoseiFormatter.japaneseCalendar.dateComponents([.year, .month, .day], from: picked)
+                let c = DoseiFormatter.diaryCalendar.dateComponents([.year, .month, .day], from: picked)
                 guard let y = c.year, let m = c.month, let d = c.day else { return }
                 day = DiaryDay(year: y, month: m, day: d)
                 start = moved(start)
@@ -85,7 +85,7 @@ struct EntryEditor: View {
 
     /// 同じ「時:分」のまま、今の day に移す
     private func moved(_ date: Date) -> Date {
-        let c = DoseiFormatter.japaneseCalendar.dateComponents([.hour, .minute], from: date)
+        let c = DoseiFormatter.diaryCalendar.dateComponents([.hour, .minute], from: date)
         return day.date(hour: c.hour ?? 0, minute: c.minute ?? 0, boundaryHour: AppSettings.boundaryHour)
     }
 

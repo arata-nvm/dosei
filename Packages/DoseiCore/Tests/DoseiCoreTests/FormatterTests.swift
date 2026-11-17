@@ -3,7 +3,7 @@ import XCTest
 @testable import DoseiCore
 
 final class DoseiFormatterTests: XCTestCase {
-    let cal = DoseiFormatter.japaneseCalendar
+    let cal = DoseiFormatter.diaryCalendar
 
     func t(_ h: Int, _ m: Int, day: Int = 2) -> Date {
         cal.date(from: DateComponents(year: 2026, month: 11, day: day, hour: h, minute: m))!
@@ -86,7 +86,7 @@ final class DoseiFormatterTests: XCTestCase {
         XCTAssertEqual(day.date(hour: 9, minute: 15), t(9, 15, day: 30))
         XCTAssertEqual(day.date(hour: 4, minute: 0), t(4, 0, day: 30))
         // 区切り（午前4時）より前は、その日の深夜 = 暦の上では翌日（月をまたいでも）
-        let cal = DoseiFormatter.japaneseCalendar
+        let cal = DoseiFormatter.diaryCalendar
         XCTAssertEqual(
             day.date(hour: 1, minute: 30),
             cal.date(from: DateComponents(year: 2026, month: 12, day: 1, hour: 1, minute: 30)))

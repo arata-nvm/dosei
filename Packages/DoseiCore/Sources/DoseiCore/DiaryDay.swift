@@ -14,21 +14,21 @@ public struct DiaryDay: Hashable, Sendable {
     }
 
     /// date がどの日記の日に属するか。
-    public init(containing date: Date, boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.japaneseCalendar) {
+    public init(containing date: Date, boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.diaryCalendar) {
         let shifted = date.addingTimeInterval(-Double(boundaryHour) * 3600)
         let c = calendar.dateComponents([.year, .month, .day], from: shifted)
         self.init(year: c.year!, month: c.month!, day: c.day!)
     }
 
-    public func start(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.japaneseCalendar) -> Date {
+    public func start(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.diaryCalendar) -> Date {
         calendar.date(from: DateComponents(year: year, month: month, day: day, hour: boundaryHour))!
     }
 
-    public func end(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.japaneseCalendar) -> Date {
+    public func end(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.diaryCalendar) -> Date {
         calendar.date(byAdding: .day, value: 1, to: start(boundaryHour: boundaryHour, calendar: calendar))!
     }
 
-    public func adding(days: Int, calendar: Calendar = DoseiFormatter.japaneseCalendar) -> DiaryDay {
+    public func adding(days: Int, calendar: Calendar = DoseiFormatter.diaryCalendar) -> DiaryDay {
         let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
         let moved = calendar.date(byAdding: .day, value: days, to: noon)!
         let c = calendar.dateComponents([.year, .month, .day], from: moved)
@@ -38,7 +38,7 @@ public struct DiaryDay: Hashable, Sendable {
     /// その日の日記の中での「時:分」の日時。区切りより前の時刻（深夜）は、暦の上では翌日になる。
     public func date(
         hour: Int, minute: Int, boundaryHour: Int = 4,
-        calendar: Calendar = DoseiFormatter.japaneseCalendar
+        calendar: Calendar = DoseiFormatter.diaryCalendar
     ) -> Date {
         let calendarDay = hour < boundaryHour ? adding(days: 1, calendar: calendar) : self
         return calendar.date(
@@ -47,7 +47,7 @@ public struct DiaryDay: Hashable, Sendable {
     }
 
     /// 「11月3日（火）」
-    public func title(calendar: Calendar = DoseiFormatter.japaneseCalendar) -> String {
+    public func title(calendar: Calendar = DoseiFormatter.diaryCalendar) -> String {
         let noon = calendar.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
         let weekday = calendar.component(.weekday, from: noon)
         let names = ["日", "月", "火", "水", "木", "金", "土"]

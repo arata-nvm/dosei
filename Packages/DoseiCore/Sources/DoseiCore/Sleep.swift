@@ -34,7 +34,7 @@ public enum SleepAnalyzer {
         sessions: [TimeSpan],
         day: DiaryDay,
         boundaryHour: Int = 4,
-        calendar: Calendar = DoseiFormatter.japaneseCalendar
+        calendar: Calendar = DoseiFormatter.diaryCalendar
     ) -> (wake: Date?, bed: Date?) {
         let dayStart = day.start(boundaryHour: boundaryHour, calendar: calendar)
         let h: (Double) -> Date = { dayStart.addingTimeInterval($0 * 3600) }
