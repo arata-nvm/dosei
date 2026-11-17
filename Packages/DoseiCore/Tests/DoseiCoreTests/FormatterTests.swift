@@ -123,4 +123,24 @@ final class DoseiFormatterTests: XCTestCase {
             DiaryDay(containing: instant, calendar: calendar("America/Los_Angeles")),
             DiaryDay(year: 2026, month: 11, day: 1))
     }
+
+    /// 夏時間の切り替わる日も、日の区切りは時計の上の午前4時
+    func testDiaryDayAcrossDaylightSaving() {
+        var cal = DoseiFormatter.diaryCalendar
+        cal.timeZone = TimeZone(identifier: "Europe/Amsterdam")!
+        func at(_ iso: String) -> DiaryDay {
+            DiaryDay(containing: ISO8601DateFormatter().date(from: iso)!, calendar: cal)
+        }
+        // 2027年3月28日に夏時間が始まる。02:30Z = 現地の午前4時30分 → その日
+        XCTAssertEqual(at("2027-03-28T02:30:00Z"), DiaryDay(year: 2027, month: 3, day: 28))
+        XCTAssertEqual(at("2027-03-28T01:30:00Z"), DiaryDay(year: 2027, month: 3, day: 27))
+        // 2026年10月25日に夏時間が終わる。02:30Z = 現地の午前3時30分 → 前の日
+        XCTAssertEqual(at("2026-10-25T02:30:00Z"), DiaryDay(year: 2026, month: 10, day: 24))
+        XCTAssertEqual(at("2026-10-25T03:30:00Z"), DiaryDay(year: 2026, month: 10, day: 25))
+        // 区切りの時刻が、その日の範囲の始まりと一致する
+        let day = DiaryDay(year: 2027, month: 3, day: 28)
+        XCTAssertEqual(DiaryDay(containing: day.start(calendar: cal), calendar: cal), day)
+        XCTAssertEqual(
+            DiaryDay(containing: day.end(calendar: cal).addingTimeInterval(-1), calendar: cal), day)
+    }
 }

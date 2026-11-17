@@ -14,10 +14,11 @@ public struct DiaryDay: Hashable, Sendable {
     }
 
     /// date がどの日記の日に属するか。
+    /// 時計の上の時で比べる（4時間を引くと、夏時間の切り替わる日に1時間ずれる）。
     public init(containing date: Date, boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.diaryCalendar) {
-        let shifted = date.addingTimeInterval(-Double(boundaryHour) * 3600)
-        let c = calendar.dateComponents([.year, .month, .day], from: shifted)
-        self.init(year: c.year!, month: c.month!, day: c.day!)
+        let c = calendar.dateComponents([.year, .month, .day, .hour], from: date)
+        let day = DiaryDay(year: c.year!, month: c.month!, day: c.day!)
+        self = c.hour! < boundaryHour ? day.adding(days: -1, calendar: calendar) : day
     }
 
     public func start(boundaryHour: Int = 4, calendar: Calendar = DoseiFormatter.diaryCalendar) -> Date {

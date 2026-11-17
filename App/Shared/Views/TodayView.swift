@@ -6,6 +6,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage(AppSettings.Key.nikkyID) private var nikkyID = ""
     /// 起動した日を基準に、何日前を見ているか（0 = 今日、-1 = 昨日）
     @State private var baseDay = AppSettings.today
@@ -50,6 +51,17 @@ struct TodayView: View {
             await runImport(force: false)
         }
         .refreshable { await runImport() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { followToday() }
+        }
+    }
+
+    /// 開いたままで日付が変わった（区切りの時刻を過ぎた、タイムゾーンが変わった）とき、
+    /// 今日を見ていたなら新しい今日に移る。前の日を見ていたならそのまま。
+    private func followToday() {
+        let today = AppSettings.today
+        guard offset == 0, baseDay != today else { return }
+        baseDay = today
     }
 
     // MARK: - 日付のページ
@@ -63,6 +75,8 @@ struct TodayView: View {
                 .modelContext(context)
                 .refreshable { await runImport() }
         }
+        // 基準の日が変わったら、前後のページも作り直す
+        .id(baseDay)
         #else
         DayEntriesList(day: day, editing: $editing)
             .onTrackpadSwipe(isEnabled: editing == nil) { direction in
