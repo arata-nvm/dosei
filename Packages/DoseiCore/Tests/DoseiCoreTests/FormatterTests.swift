@@ -106,4 +106,21 @@ final class DoseiFormatterTests: XCTestCase {
         XCTAssertEqual(r.wake, t(7, 40))
         XCTAssertEqual(r.bed, t(23, 50))
     }
+
+    /// 同じ時刻でも、どのタイムゾーンで書くかで本文が変わる（海外では現地時間で書く）
+    func testTimeZone() {
+        func calendar(_ id: String) -> Calendar {
+            var c = DoseiFormatter.diaryCalendar
+            c.timeZone = TimeZone(identifier: id)!
+            return c
+        }
+        let instant = ISO8601DateFormatter().date(from: "2026-11-02T10:00:00Z")!
+        let items: [TimelineItem] = [.init(start: instant, text: "会議")]
+        XCTAssertEqual(DoseiFormatter(calendar: calendar("Asia/Tokyo")).format(items), "\u{3000}午後７時、会議。")
+        XCTAssertEqual(DoseiFormatter(calendar: calendar("Europe/London")).format(items), "\u{3000}午前１０時、会議。")
+        // ロサンゼルスでは 11月2日の午前2時 = 区切り（午前4時）より前なので 11月1日の日記
+        XCTAssertEqual(
+            DiaryDay(containing: instant, calendar: calendar("America/Los_Angeles")),
+            DiaryDay(year: 2026, month: 11, day: 1))
+    }
 }
