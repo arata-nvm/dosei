@@ -16,6 +16,7 @@ struct TodayView: View {
     @State private var importErrors: [String] = []
     @State private var editing: Entry?
     @State private var showSettings = false
+    @FocusState private var inputFocused: Bool
 
     /// さかのぼれる日数
     private static let maxDaysBack = 3650
@@ -113,6 +114,7 @@ struct TodayView: View {
             TextField("やったこと", text: $draft, axis: .vertical)
                 .lineLimit(1...5)
                 .textFieldStyle(.roundedBorder)
+                .focused($inputFocused)
                 .onSubmit(add)
                 .submitLabel(.done)
                 .onChange(of: draft) { _, text in
@@ -142,8 +144,19 @@ struct TodayView: View {
         let entry = Entry(start: start, text: text)
         context.insert(entry)
         try? context.save()
-        draft = ""
+        clearDraft(refocus: isToday)
         if !isToday { editing = entry }
+    }
+
+    /// 入力欄を空にする。変換中の文字が残ったまま ↑ を押すと、空にしたあとで
+    /// 入力欄がその文字を確定して書き戻してしまうので、先にフォーカスを外して確定させてから空にする。
+    private func clearDraft(refocus: Bool) {
+        let wasFocused = inputFocused
+        inputFocused = false
+        Task { @MainActor in
+            draft = ""
+            if wasFocused && refocus { inputFocused = true }
+        }
     }
 
     private func runImport(force: Bool = true) async {
