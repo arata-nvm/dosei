@@ -60,7 +60,8 @@ public actor SpotifyLibrary {
         let task = Task {
             // 印は取得の中で消す。外で消すと、待っていた側が「終わった取得」を待ち直し続けて止まらなくなる
             defer { self.loading = nil }
-            try await self.append(try await self.fetchPage(url))
+            let page = try await self.fetchPage(url)
+            self.append(page)
         }
         loading = task
         try await task.value
