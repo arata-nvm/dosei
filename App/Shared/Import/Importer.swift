@@ -41,12 +41,14 @@ enum Importer {
         if !force, let last = lastAutoImport[day], Date().timeIntervalSince(last) < autoImportInterval {
             return []
         }
-        let errors = await importDay(day, from: sources, into: context)
-        // 途中で止められたときは、次に開いたときにもう一度取り込む
-        if !Task.isCancelled && errors.isEmpty {
+        let failures = await importFailures(day, from: sources, into: context)
+        // 途中で止められたときや失敗したときは、次に開いたときにもう一度取り込む
+        if !Task.isCancelled && failures.isEmpty {
             lastAutoImport[day] = Date()
         }
-        return errors
+        // 自動の取り込みでは、つながらないだけのエラーは出さない。
+        // オフラインで日付を変えるたびにアラートが出ないように。引っぱったときは出す。
+        return failures.filter { force || !isOffline($0.error) }.map(\.message)
     }
 
     /// - Returns: 表示するエラーメッセージ。キャンセルされただけのものは含めない。
@@ -55,19 +57,33 @@ enum Importer {
         _ day: DiaryDay, from sources: [any RecordSource],
         into context: ModelContext
     ) async -> [String] {
-        var errors: [String] = []
+        await importFailures(day, from: sources, into: context).map(\.message)
+    }
+
+    private struct Failure {
+        let error: Error
+        let message: String
+    }
+
+    /// キャンセルされただけのものは含めない。
+    private static func importFailures(
+        _ day: DiaryDay, from sources: [any RecordSource],
+        into context: ModelContext
+    ) async -> [Failure] {
+        var failures: [Failure] = []
         for source in sources {
             do {
                 save(try await source.records(for: day), into: context)
             } catch {
                 // 日付を切り替えて止められただけなら出さない
                 if !isCancellation(error) {
-                    errors.append("\(source.name): \(error.localizedDescription)")
+                    failures.append(
+                        Failure(error: error, message: "\(source.name): \(error.localizedDescription)"))
                 }
             }
         }
         try? context.save()
-        return errors
+        return failures
     }
 
     /// sourceID で既存を探し、なければ追加、あれば更新する。
@@ -89,6 +105,22 @@ enum Importer {
                 context.insert(Entry(record))
             }
         }
+    }
+
+    /// ネットワークにつながらない（オフライン・機内モード・サーバーに届かない）ことによるエラーか
+    static func isOffline(_ error: Error) -> Bool {
+        let ns = error as NSError
+        guard ns.domain == NSURLErrorDomain else { return false }
+        return [
+            NSURLErrorNotConnectedToInternet,
+            NSURLErrorNetworkConnectionLost,
+            NSURLErrorDataNotAllowed,
+            NSURLErrorInternationalRoamingOff,
+            NSURLErrorCannotFindHost,
+            NSURLErrorCannotConnectToHost,
+            NSURLErrorDNSLookupFailed,
+            NSURLErrorTimedOut,
+        ].contains(ns.code)
     }
 
     static func isCancellation(_ error: Error) -> Bool {
